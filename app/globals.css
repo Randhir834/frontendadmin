@@ -1,0 +1,287 @@
+@import "tailwindcss";
+@import "../styles/responsive.css";
+
+@theme inline {
+  --color-background: #F5F5F5;
+  --color-foreground: #1E3A5F;
+
+  /* Primary Blue Palette (from PlayFit logo) */
+  --color-primary-50: #E3F2FD;
+  --color-primary-100: #BBDEFB;
+  --color-primary-200: #90CAF9;
+  --color-primary-300: #64B5F6;
+  --color-primary-400: #42A5F5;
+  --color-primary-500: #1E88E5;
+  --color-primary-600: #1976D2;
+  --color-primary-700: #1565C0;
+  --color-primary-800: #0D47A1;
+  --color-primary-900: #0A3A7F;
+
+  /* Secondary Green Palette (from PlayFit logo) */
+  --color-secondary-50: #F1F8E9;
+  --color-secondary-100: #DCEDC8;
+  --color-secondary-200: #C5E1A5;
+  --color-secondary-300: #AED581;
+  --color-secondary-400: #9CCC65;
+  --color-secondary-500: #7CB342;
+  --color-secondary-600: #689F38;
+  --color-secondary-700: #558B2F;
+  --color-secondary-800: #33691E;
+  --color-secondary-900: #1B5E20;
+
+  /* Accent Colors (from PlayFit rainbow logo) */
+  --color-accent-yellow: #FFA726;
+  --color-accent-yellow-light: #FFE0B2;
+  --color-accent-pink: #EC407A;
+  --color-accent-pink-light: #F8BBD0;
+  --color-accent-purple: #AB47BC;
+  --color-accent-purple-light: #E1BEE7;
+  --color-accent-teal: #26C6DA;
+  --color-accent-teal-light: #B2EBF2;
+  --color-accent-orange: #FF7043;
+  --color-accent-orange-light: #FFCCBC;
+
+  /* Dark Navy Palette (from PlayFit logo) */
+  --color-dark-50: #E8EEF5;
+  --color-dark-100: #C5D3E6;
+  --color-dark-200: #9FB5D4;
+  --color-dark-300: #7897C2;
+  --color-dark-400: #5B80B5;
+  --color-dark-500: #3E69A8;
+  --color-dark-600: #3861A0;
+  --color-dark-700: #305697;
+  --color-dark-800: #284C8D;
+  --color-dark-900: #1E3A5F;
+
+  /* Neutral Colors */
+  --color-card: #FFFFFF;
+  --color-sidebar: #FFFFFF;
+  --color-border: #E0E0E0;
+  --color-border-soft: #F0F0F0;
+  --color-hover: #FAFAFA;
+
+  /* Text Colors */
+  --color-text-primary: #1E3A5F;
+  --color-text-secondary: #546E7A;
+  --color-text-muted: #78909C;
+  --color-text-placeholder: #B0BEC5;
+  --color-text-white: #FFFFFF;
+
+  /* Dashboard Status Colors */
+  --color-success: #7CB342;
+  --color-warning: #FFA726;
+  --color-error: #EC407A;
+  --color-info: #1E88E5;
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--color-background);
+  color: var(--color-foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  overflow-x: hidden;
+}
+
+/* Prevent layout shift during page transitions */
+* {
+  box-sizing: border-box;
+}
+
+/* Smooth transitions for interactive elements */
+button, a, input, select, textarea {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced focus states */
+button:focus-visible, 
+a:focus-visible, 
+input:focus-visible, 
+textarea:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  transition: outline 0.2s ease;
+}
+
+/* Remove all focus effects for select elements */
+select,
+select:focus,
+select:focus-visible,
+select:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* Smooth hover effects */
+button:hover, 
+a:hover {
+  transform: translateY(-1px);
+  transition: transform 0.2s ease;
+}
+
+button:active, 
+a:active {
+  transform: translateY(0);
+  transition: transform 0.1s ease;
+}
+
+/* Hide scrollbar utility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* Page transition animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.page-transition-enter {
+  animation: fadeInUp 0.3s ease-out forwards;
+}
+
+.page-transition-exit {
+  animation: fadeOut 0.2s ease-in forwards;
+}
+
+/* Skeleton loading animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Smooth card hover effects */
+.card-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Loading spinner improvements */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin 2s linear infinite;
+}
+
+/* Backdrop blur for modals */
+.backdrop-blur-smooth {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: backdrop-filter 0.3s ease;
+}
+
+/* Smooth modal transitions */
+.modal-enter {
+  opacity: 0;
+  transform: scale(0.95) translateY(20px);
+}
+
+.modal-enter-active {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal-exit {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.modal-exit-active {
+  opacity: 0;
+  transform: scale(0.95) translateY(20px);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth navigation active states */
+.nav-item-active {
+  position: relative;
+}
+
+.nav-item-active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: var(--color-primary-500);
+  border-radius: 0 2px 2px 0;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}

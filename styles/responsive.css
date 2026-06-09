@@ -1,0 +1,433 @@
+/* Responsive Utility Classes for Admin Frontend */
+
+/* Container Queries */
+@container (min-width: 320px) {
+  .container-xs\:block { display: block; }
+  .container-xs\:flex { display: flex; }
+  .container-xs\:grid { display: grid; }
+  .container-xs\:hidden { display: none; }
+  .container-xs\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .container-xs\:p-2 { padding: 0.5rem; }
+  .container-xs\:p-3 { padding: 0.75rem; }
+  .container-xs\:p-4 { padding: 1rem; }
+}
+
+@container (min-width: 480px) {
+  .container-sm\:block { display: block; }
+  .container-sm\:flex { display: flex; }
+  .container-sm\:grid { display: grid; }
+  .container-sm\:hidden { display: none; }
+  .container-sm\:text-base { font-size: 1rem; line-height: 1.5rem; }
+  .container-sm\:p-4 { padding: 1rem; }
+  .container-sm\:p-6 { padding: 1.5rem; }
+}
+
+@container (min-width: 640px) {
+  .container-md\:block { display: block; }
+  .container-md\:flex { display: flex; }
+  .container-md\:grid { display: grid; }
+  .container-md\:hidden { display: none; }
+  .container-md\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+  .container-md\:p-6 { padding: 1.5rem; }
+  .container-md\:p-8 { padding: 2rem; }
+}
+
+/* Responsive Typography Scale */
+.text-responsive-xs {
+  font-size: 0.75rem;
+  line-height: 1rem;
+}
+
+.text-responsive-sm {
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+}
+
+.text-responsive-base {
+  font-size: 1rem;
+  line-height: 1.5rem;
+}
+
+.text-responsive-lg {
+  font-size: 1.125rem;
+  line-height: 1.75rem;
+}
+
+.text-responsive-xl {
+  font-size: 1.25rem;
+  line-height: 1.75rem;
+}
+
+.text-responsive-2xl {
+  font-size: 1.5rem;
+  line-height: 2rem;
+}
+
+@media (min-width: 640px) {
+  .text-responsive-xs { font-size: 0.875rem; line-height: 1.25rem; }
+  .text-responsive-sm { font-size: 1rem; line-height: 1.5rem; }
+  .text-responsive-base { font-size: 1.125rem; line-height: 1.75rem; }
+  .text-responsive-lg { font-size: 1.25rem; line-height: 1.75rem; }
+  .text-responsive-xl { font-size: 1.5rem; line-height: 2rem; }
+  .text-responsive-2xl { font-size: 1.875rem; line-height: 2.25rem; }
+}
+
+@media (min-width: 1024px) {
+  .text-responsive-xs { font-size: 1rem; line-height: 1.5rem; }
+  .text-responsive-sm { font-size: 1.125rem; line-height: 1.75rem; }
+  .text-responsive-base { font-size: 1.25rem; line-height: 1.75rem; }
+  .text-responsive-lg { font-size: 1.5rem; line-height: 2rem; }
+  .text-responsive-xl { font-size: 1.875rem; line-height: 2.25rem; }
+  .text-responsive-2xl { font-size: 2.25rem; line-height: 2.5rem; }
+}
+
+/* Responsive Spacing */
+.space-responsive-y > * + * {
+  margin-top: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .space-responsive-y > * + * {
+    margin-top: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .space-responsive-y > * + * {
+    margin-top: 1.5rem;
+  }
+}
+
+.gap-responsive {
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .gap-responsive {
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .gap-responsive {
+    gap: 1.5rem;
+  }
+}
+
+/* Responsive Padding */
+.p-responsive {
+  padding: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .p-responsive {
+    padding: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .p-responsive {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .p-responsive {
+    padding: 2rem;
+  }
+}
+
+/* Touch-Friendly Targets */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (min-width: 640px) {
+  .touch-target {
+    min-height: auto;
+    min-width: auto;
+  }
+}
+
+/* Responsive Grid Auto-Fit */
+.grid-responsive-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .grid-responsive-fit {
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-responsive-fit {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+  }
+}
+
+/* Responsive Card Layout */
+.card-responsive {
+  padding: 0.75rem;
+  border-radius: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .card-responsive {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-responsive {
+    padding: 1.5rem;
+    border-radius: 1rem;
+  }
+}
+
+/* Responsive Flex Direction */
+.flex-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .flex-responsive {
+    flex-direction: row;
+    gap: 1rem;
+  }
+}
+
+/* Responsive Image Sizing */
+.img-responsive {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.img-responsive-square {
+  aspect-ratio: 1 / 1;
+}
+
+.img-responsive-video {
+  aspect-ratio: 16 / 9;
+}
+
+@media (min-width: 640px) {
+  .img-responsive-video {
+    aspect-ratio: 4 / 3;
+  }
+}
+
+@media (min-width: 1024px) {
+  .img-responsive-video {
+    aspect-ratio: 16 / 9;
+  }
+}
+
+/* Responsive Navigation */
+.nav-responsive {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  z-index: 50;
+}
+
+@media (min-width: 1024px) {
+  .nav-responsive {
+    position: static;
+    border-top: none;
+    padding: 0;
+    background: transparent;
+  }
+}
+
+/* Responsive Sidebar */
+.sidebar-responsive {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 280px;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease-in-out;
+  z-index: 50;
+}
+
+.sidebar-responsive.open {
+  transform: translateX(0);
+}
+
+@media (min-width: 1024px) {
+  .sidebar-responsive {
+    position: static;
+    transform: translateX(0);
+    width: 256px;
+  }
+}
+
+/* Responsive Modal */
+.modal-responsive {
+  position: relative;
+  margin: 0.5rem;
+  max-height: calc(100vh - 1rem);
+  border-radius: 0.75rem;
+  overflow-y: auto;
+}
+
+@media (min-width: 640px) {
+  .modal-responsive {
+    margin: 1.5rem;
+    max-height: calc(100vh - 3rem);
+    border-radius: 1rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .modal-responsive {
+    margin: 2rem;
+    max-height: calc(100vh - 4rem);
+  }
+}
+
+@media (min-width: 1024px) {
+  .modal-responsive {
+    position: relative;
+    margin: 0;
+    width: 90%;
+    max-width: 700px;
+    height: auto;
+    max-height: 90vh;
+  }
+}
+
+/* Responsive Table */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table-responsive table {
+  min-width: 600px;
+}
+
+@media (min-width: 1024px) {
+  .table-responsive table {
+    min-width: 100%;
+  }
+}
+
+/* Mobile Card View for Tables */
+.table-card-view {
+  display: block;
+}
+
+.table-card-view .table-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 1024px) {
+  .table-card-view {
+    display: none;
+  }
+}
+
+/* Responsive Form Layout */
+.form-responsive {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .form-responsive {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+.form-responsive .full-width {
+  grid-column: 1 / -1;
+}
+
+/* Responsive Button Group */
+.button-group-responsive {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .button-group-responsive {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+}
+
+/* Responsive Video Player */
+.video-responsive {
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+}
+
+.video-responsive iframe,
+.video-responsive video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* Print Styles */
+@media print {
+  .print-hidden {
+    display: none !important;
+  }
+  
+  .print-visible {
+    display: block !important;
+  }
+  
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    page-break-after: avoid;
+  }
+  
+  .page-break {
+    page-break-before: always;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -10,7 +10,7 @@ import { courseService } from '@/services/courseService';
 import { courseMaterialService, type CourseMaterial } from '@/services/courseMaterialService';
 import { adminService } from '@/services/adminService';
 import SecureFileViewer from '@/components/secure/SecureFileViewer';
-import type { CourseInstructor } from '@/types';
+import type { CourseInstructor, Course } from '@/types';
 
 interface InstructorOption {
   id: number;

@@ -181,7 +181,7 @@ export default function AdminAssignmentsPage() {
           <CardContent className="p-4">
             <p className="text-sm text-text-muted mb-1">Total Submissions</p>
             <p className="text-2xl font-bold text-blue-600">
-              {assignments.reduce((sum, a) => sum + parseInt(a.submission_count || '0'), 0)}
+              {assignments.reduce((sum, a) => sum + parseInt(String(a.submission_count || '0')), 0)}
             </p>
           </CardContent>
         </Card>
@@ -190,7 +190,7 @@ export default function AdminAssignmentsPage() {
           <CardContent className="p-4">
             <p className="text-sm text-text-muted mb-1">Students Engaged</p>
             <p className="text-2xl font-bold text-purple-600">
-              {assignments.reduce((sum, a) => sum + parseInt(a.student_count || '0'), 0)}
+              {assignments.reduce((sum, a) => sum + parseInt(String(a.student_count || '0')), 0)}
             </p>
           </CardContent>
         </Card>

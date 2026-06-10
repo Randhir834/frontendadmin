@@ -79,23 +79,6 @@ export default function AdminCourseMaterialsPage({ params }: { params: Promise<{
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={() => router.push(`/admin/courses/${courseId}`)}
-          className="p-2 rounded-lg border border-border hover:bg-hover transition-colors"
-          aria-label="Back to course"
-        >
-          <ArrowLeft size={18} className="text-text-secondary" />
-        </button>
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-text-primary">
-            Course Materials
-          </h1>
-          <p className="text-sm text-text-muted">{course.title}</p>
-        </div>
-      </div>
-
       {/* Materials Manager */}
       <CourseMaterialsManager
         courseId={courseId}

@@ -120,11 +120,22 @@ export default function CourseMaterialsManager({
     }
 
     try {
+      // Optimistically update UI first
+      setMaterials(prev => prev.filter(material => material.id !== materialId));
+      
+      // Then delete on backend
       await courseMaterialService.deleteMaterial(materialId);
       setSuccess('Material deleted successfully');
-      await fetchMaterials();
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
+      // If delete fails, refetch to restore the correct state
       setError(err instanceof Error ? err.message : 'Failed to delete material');
+      await fetchMaterials();
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => setError(null), 5000);
     }
   };
 
@@ -174,10 +185,6 @@ export default function CourseMaterialsManager({
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Course Materials</h2>
           <p className="text-gray-600">{courseName}</p>
-        </div>
-        <div className="flex items-center space-x-2 text-sm text-gray-500">
-          <Shield className="h-4 w-4" />
-          <span>Secure Content Management</span>
         </div>
       </div>
 

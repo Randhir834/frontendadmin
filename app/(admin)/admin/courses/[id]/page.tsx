@@ -346,8 +346,6 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
                           <h4 className="font-semibold text-[#1E293B] truncate">{student.student_name}</h4>
                           <p className="text-xs text-[#64748B] truncate">{student.student_email}</p>
                           <div className="flex items-center gap-3 mt-2 text-xs">
-                            <span className="text-[#64748B]">Progress: <span className="font-semibold text-[#1E293B]">{student.progress || 0}%</span></span>
-                            <span className="text-[#CBD5E1]">•</span>
                             <span className={`px-2 py-1 rounded font-medium ${
                               student.status === 'active' ? 'bg-[#DCFCE7] text-[#166534]' :
                               student.status === 'completed' ? 'bg-[#DBEAFE] text-[#1E40AF]' :
@@ -500,29 +498,6 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
               ) : (
                 <p className="text-sm text-[#94A3B8] text-center py-4">No instructors assigned.</p>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Quick Actions */}
-          <Card>
-            <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
-            <CardContent className="space-y-2">
-              <Link href={`/admin/courses/${course.id}/lessons`} className="block">
-                <Button variant="outline" className="w-full justify-start gap-3 h-auto py-3">
-                  <div className="p-2 bg-[#DBEAFE] rounded-lg">
-                    <BookOpen size={16} className="text-[#1E40AF]" />
-                  </div>
-                  <span className="font-medium">Manage Lessons</span>
-                </Button>
-              </Link>
-              <Link href={`/admin/courses/${course.id}/materials`} className="block">
-                <Button variant="outline" className="w-full justify-start gap-3 h-auto py-3">
-                  <div className="p-2 bg-[#FEF3C7] rounded-lg">
-                    <FileText size={16} className="text-[#D97706]" />
-                  </div>
-                  <span className="font-medium">Manage Materials</span>
-                </Button>
-              </Link>
             </CardContent>
           </Card>
         </div>

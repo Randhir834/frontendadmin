@@ -55,7 +55,6 @@ export interface Course {
   total_lessons?: number;
   total_sections?: number;
   is_enrolled?: boolean;
-  progress?: number;
   created_at: string;
   updated_at: string;
 }
@@ -89,7 +88,6 @@ export interface Enrollment {
   user_id: number;
   course_id: number;
   status: 'active' | 'completed' | 'cancelled';
-  progress: number;
   enrolled_at: string;
   completed_at?: string;
   course_title?: string;
@@ -269,7 +267,6 @@ export interface EnrolledStudent {
   user_id: number;
   course_id: number;
   status: 'active' | 'completed' | 'cancelled';
-  progress: number;
   enrolled_at: string;
   completed_at?: string;
   student_name: string;
@@ -302,7 +299,6 @@ export interface EnrollmentStats {
   active_students: number;
   completed_students: number;
   students_completed_course: number;
-  average_progress: number;
   new_enrollments_week: number;
   new_enrollments_month: number;
 }

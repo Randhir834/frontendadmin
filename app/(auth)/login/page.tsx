@@ -56,11 +56,17 @@ export default function LoginPage() {
           message = 'Request timeout. Please try again.';
         }
       } else {
-        const error = err as { response?: { data?: { error?: string } }; message?: string; code?: string };
+        const error = err as { response?: { data?: { error?: string }; status?: number }; message?: string; code?: string };
         
         // Structured API error response
         if (error.response?.data?.error) {
           message = error.response.data.error;
+        } else if (error.response?.status === 429) {
+          message = 'Too many login attempts. Please wait a few minutes and try again.';
+        } else if (error.response?.status === 403) {
+          message = 'Access denied. Please check your credentials and try again.';
+        } else if (error.response?.status === 401) {
+          message = error.response?.data?.error || 'Invalid credentials. Please check your email/phone and password.';
         } else if (error.message) {
           message = error.message;
         } else if (error.code) {

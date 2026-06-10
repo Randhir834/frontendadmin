@@ -220,12 +220,23 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
     }
 
     try {
-      await courseMaterialService.deleteMaterial(materialId);
+      // Optimistically update UI first
       setExistingMaterials(prev => prev.filter(material => material.id !== materialId));
+      
+      // Then delete on backend
+      await courseMaterialService.deleteMaterial(materialId);
       alert('Material deleted successfully');
     } catch (error) {
       console.error('Failed to delete material:', error);
       alert('Failed to delete material. Please try again.');
+      
+      // If delete fails, refetch materials to restore correct state
+      try {
+        const materialsRes = await courseMaterialService.getCourseMaterials(courseId);
+        setExistingMaterials(materialsRes.materials || []);
+      } catch (fetchError) {
+        console.error('Failed to refetch materials:', fetchError);
+      }
     }
   };
 

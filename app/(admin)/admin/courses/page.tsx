@@ -171,20 +171,12 @@ function CoursesContent() {
             <div className="text-center py-12">
               <BookOpen className="size-12 text-[#CBD5E1] mx-auto mb-4" />
               <h3 className="text-lg font-medium text-[#1E293B] mb-2">No courses found</h3>
-              <p className="text-sm text-[#64748B] mb-6">
+              <p className="text-sm text-[#64748B]">
                 {filters.search || Object.values(filters).some(v => v && v !== 'created_at' && v !== 'desc')
                   ? 'Try adjusting your filters or search terms.'
                   : 'Get started by creating your first course.'
                 }
               </p>
-              {!filters.search && !Object.values(filters).some(v => v && v !== 'created_at' && v !== 'desc') && (
-                <Link href="/admin/courses/create">
-                  <Button className="flex items-center gap-2">
-                    <PlusCircle className="size-4" />
-                    Create First Course
-                  </Button>
-                </Link>
-              )}
             </div>
           </CardContent>
         </Card>

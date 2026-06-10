@@ -1,8 +1,8 @@
 import api from './api';
 
 export const liveClassService = {
-  getLiveClasses: async (courseId?: number) => {
-    const response = await api.get('/live-classes', { params: courseId ? { course_id: courseId } : {} });
+  getLiveClasses: async (filters?: { course_id?: number; instructor_id?: number }) => {
+    const response = await api.get('/live-classes', { params: filters || {} });
     return response.data;
   },
 
@@ -23,6 +23,11 @@ export const liveClassService = {
 
   deleteLiveClass: async (id: number) => {
     const response = await api.delete(`/live-classes/${id}`);
+    return response.data;
+  },
+
+  getFilterOptions: async () => {
+    const response = await api.get('/live-classes/filters/options');
     return response.data;
   },
 };

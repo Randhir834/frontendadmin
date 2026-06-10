@@ -31,12 +31,7 @@ export const useRealTimeUpdates = ({
 
   useEffect(() => {
     // Connect to socket
-    socketService.connect();
-
-    // Join appropriate rooms
-    if (userId) {
-      socketService.joinUserRoom(userId);
-    }
+    socketService.connect(userId);
     
     if (isAdmin) {
       socketService.joinAdminRoom();

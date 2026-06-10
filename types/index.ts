@@ -264,6 +264,49 @@ export interface CourseProgressSummary {
   percentage: number;
 }
 
+export interface EnrolledStudent {
+  id: number;
+  user_id: number;
+  course_id: number;
+  status: 'active' | 'completed' | 'cancelled';
+  progress: number;
+  enrolled_at: string;
+  completed_at?: string;
+  student_name: string;
+  student_email: string;
+  student_phone?: string;
+  avatar_url?: string;
+  date_of_birth?: string;
+  grade?: string;
+  completed_lessons: number;
+  total_lessons: number;
+}
+
+export interface CourseMaterial {
+  id: number;
+  course_id: number;
+  title: string;
+  description?: string;
+  file_name: string;
+  file_path: string;
+  file_size: number;
+  mime_type: string;
+  uploaded_by: number;
+  uploaded_by_name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EnrollmentStats {
+  total_students: number;
+  active_students: number;
+  completed_students: number;
+  students_completed_course: number;
+  average_progress: number;
+  new_enrollments_week: number;
+  new_enrollments_month: number;
+}
+
 export interface DashboardStats {
   totalStudents: number;
   totalInstructors: number;

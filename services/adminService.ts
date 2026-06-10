@@ -33,8 +33,8 @@ export const adminService = {
     return response.data;
   },
 
-  createAdmin: async (adminData: { name: string; email: string; password: string }) => {
-    const response = await api.post('/admin/create-admin', adminData);
+  createInstructor: async (instructorData: any) => {
+    const response = await api.post('/admin/instructors/create', instructorData);
     return response.data;
   },
 };

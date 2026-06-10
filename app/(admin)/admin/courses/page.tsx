@@ -10,7 +10,6 @@ import CourseCard from '@/components/ui/CourseCard';
 import CourseFilters from '@/components/ui/CourseFilters';
 import { courseService } from '@/services/courseService';
 import { categoryService } from '@/services/categoryService';
-import { adminService } from '@/services/adminService';
 import api from '@/services/api';
 import type { Course, Category } from '@/types';
 
@@ -23,6 +22,7 @@ function CoursesContent() {
   const [deleting, setDeleting] = useState<number | null>(null);
   const [filters, setFilters] = useState({
     search: searchParams?.get('search') || '',
+    status: searchParams?.get('status') || '',
     category_id: searchParams?.get('category_id') || '',
     level: searchParams?.get('level') || '',
     price_range: searchParams?.get('price_range') || '',
@@ -58,8 +58,8 @@ function CoursesContent() {
 
   const fetchInstructors = async () => {
     try {
-      const response = await adminService.getUsers('instructor');
-      setInstructors(response.users || []);
+      const response = await api.get('/admin/users?role=instructor');
+      setInstructors(response.data.users || []);
     } catch (error) {
       console.error('Failed to fetch instructors:', error);
     }
@@ -93,20 +93,22 @@ function CoursesContent() {
     window.location.href = `/admin/courses/${id}/edit`;
   };
 
-  const handleFiltersChange = (newFilters: typeof filters) => {
+  const handleFiltersChange = (newFilters: any) => {
     setFilters(newFilters);
     
     // Update URL params
     const params = new URLSearchParams();
     Object.entries(newFilters).forEach(([key, value]) => {
-      if (value) params.set(key, value);
+      if (value) params.set(key, String(value));
     });
     const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
     window.history.replaceState({}, '', newUrl);
   };
 
   const stats = {
-    total: courses.length
+    total: courses.length,
+    published: courses.filter(c => c.status === 'published').length,
+    archived: courses.filter(c => c.status === 'archived').length
   };
 
   return (
@@ -114,19 +116,13 @@ function CoursesContent() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-[#1E3A5F]">Course Management</h1>
-          <p className="text-sm text-[#78909C] mt-1">
+          <h1 className="text-xl md:text-2xl font-bold text-[#1E293B]">Course Management</h1>
+          <p className="text-sm text-[#64748B] mt-1">
             Manage all courses, instructors, and content
           </p>
         </div>
         
         <div className="flex items-center gap-3">
-          {/* Total Courses Counter */}
-          <div className="flex items-center gap-2 px-4 py-2 bg-[#EFF6FF] text-[#1E40AF] rounded-lg border border-[#DBEAFE]">
-            <BookOpen className="size-4" />
-            <span className="text-sm font-semibold">{stats.total} Courses</span>
-          </div>
-          
           <Link href="/admin/courses/create">
             <Button className="flex items-center gap-2">
               <PlusCircle className="size-4" />
@@ -136,20 +132,46 @@ function CoursesContent() {
         </div>
       </div>
 
-
+      {/* Stats Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[#1E293B]">{stats.total}</div>
+              <div className="text-sm text-[#64748B]">Total Courses</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[#1B8A44]">{stats.published}</div>
+              <div className="text-sm text-[#64748B]">Published</div>
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-4">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-[#64748B]">{stats.archived}</div>
+              <div className="text-sm text-[#64748B]">Archived</div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Course Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-8 animate-spin text-[#1E88E5]" />
+          <Loader2 className="size-8 animate-spin text-[#1B8A44]" />
         </div>
       ) : courses.length === 0 ? (
         <Card>
           <CardContent>
             <div className="text-center py-12">
-              <BookOpen className="size-12 text-[#E0E0E0] mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-[#1E3A5F] mb-2">No courses found</h3>
-              <p className="text-sm text-[#78909C] mb-6">
+              <BookOpen className="size-12 text-[#CBD5E1] mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-[#1E293B] mb-2">No courses found</h3>
+              <p className="text-sm text-[#64748B] mb-6">
                 {filters.search || Object.values(filters).some(v => v && v !== 'created_at' && v !== 'desc')
                   ? 'Try adjusting your filters or search terms.'
                   : 'Get started by creating your first course.'
@@ -190,7 +212,7 @@ export default function AdminCoursesPage() {
     <Suspense fallback={
       <div className="p-4 md:p-8 max-w-[1400px] mx-auto">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-8 animate-spin text-[#1E88E5]" />
+          <Loader2 className="size-8 animate-spin text-[#1B8A44]" />
         </div>
       </div>
     }>

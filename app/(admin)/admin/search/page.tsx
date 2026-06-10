@@ -90,7 +90,6 @@ function SearchResultsContent() {
                               )}
                               <span className={`inline-block px-2 py-1 text-xs rounded ${
                                 course.status === 'published' ? 'bg-green-500/10 text-green-500' :
-                                course.status === 'draft' ? 'bg-yellow-500/10 text-yellow-500' :
                                 'bg-gray-500/10 text-gray-500'
                               }`}>
                                 {course.status}

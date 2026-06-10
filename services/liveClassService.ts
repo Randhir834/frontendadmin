@@ -1,17 +1,8 @@
 import api from './api';
 
 export const liveClassService = {
-  getLiveClasses: async (filters?: { course_id?: number; instructor_id?: number }) => {
-    const params: any = {};
-    if (filters?.course_id) params.course_id = filters.course_id;
-    if (filters?.instructor_id) params.instructor_id = filters.instructor_id;
-    
-    const response = await api.get('/live-classes', { params });
-    return response.data;
-  },
-
-  getFilterOptions: async () => {
-    const response = await api.get('/live-classes/filter-options');
+  getLiveClasses: async (courseId?: number) => {
+    const response = await api.get('/live-classes', { params: courseId ? { course_id: courseId } : {} });
     return response.data;
   },
 

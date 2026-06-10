@@ -20,7 +20,7 @@ interface SidebarLayoutProps {
   searchPath?: string;
 }
 
-function SidebarLayoutContent({ children, items, title = 'PlayFit LMS', searchPlaceholder = 'Search courses...', searchPath = '/admin/courses' }: SidebarLayoutProps) {
+function SidebarLayoutContent({ children, items, title = 'PlayFit', searchPlaceholder = 'Search courses...', searchPath = '/admin/courses' }: SidebarLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [displayName, setDisplayName] = useState('Admin');

@@ -71,50 +71,46 @@ class SocketService {
     }
   }
 
-  getSocket() {
-    return this.socket;
-  }
-
-  // Join user-specific room
-  joinUserRoom(userId: number) {
-    if (this.socket) {
-      this.socket.emit('join-user-room', userId);
-    }
-  }
-
-  // Join admin room
   joinAdminRoom() {
     if (this.socket) {
       this.socket.emit('join-admin-room');
     }
   }
 
-  // Listen for profile updates
   onProfileUpdate(callback: (data: any) => void) {
     if (this.socket) {
-      this.socket.on('profile-updated', callback);
+      this.socket.on('profile-update', callback);
     }
   }
 
-  // Listen for user updates
+  offProfileUpdate(callback?: (data: any) => void) {
+    if (this.socket) {
+      if (callback) {
+        this.socket.off('profile-update', callback);
+      } else {
+        this.socket.off('profile-update');
+      }
+    }
+  }
+
   onUserUpdate(callback: (data: any) => void) {
     if (this.socket) {
-      this.socket.on('user-updated', callback);
+      this.socket.on('user-update', callback);
     }
   }
 
-  // Remove profile update listener
-  offProfileUpdate() {
+  offUserUpdate(callback?: (data: any) => void) {
     if (this.socket) {
-      this.socket.off('profile-updated');
+      if (callback) {
+        this.socket.off('user-update', callback);
+      } else {
+        this.socket.off('user-update');
+      }
     }
   }
 
-  // Remove user update listener
-  offUserUpdate() {
-    if (this.socket) {
-      this.socket.off('user-updated');
-    }
+  getSocket() {
+    return this.socket;
   }
 }
 

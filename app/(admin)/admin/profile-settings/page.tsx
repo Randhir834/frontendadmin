@@ -2,14 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import {
-  Mail, Phone, MapPin, Calendar, Camera, Shield, Loader2, Trash2, Save, User, UserPlus
+  Mail, Phone, MapPin, Calendar, Camera, Shield, LogOut, Loader2, Trash2, Save, User
 } from 'lucide-react';
 import { userService, UserProfile } from '@/services/userService';
-import { adminService } from '@/services/adminService';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
-import { getAvatarUrl } from '@/utils/avatarUtils';
 
 export default function AdminProfileSettingsPage() {
   const [user, setUser] = useState<UserProfile | null>(null);
@@ -18,8 +16,6 @@ export default function AdminProfileSettingsPage() {
   const [message, setMessage] = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
-  const [creatingAdmin, setCreatingAdmin] = useState(false);
-  const [showAddAdminModal, setShowAddAdminModal] = useState(false);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -31,13 +27,6 @@ export default function AdminProfileSettingsPage() {
   const [passwordData, setPasswordData] = useState({
     oldPassword: '',
     newPassword: '',
-    confirmPassword: ''
-  });
-
-  const [newAdminData, setNewAdminData] = useState({
-    name: '',
-    email: '',
-    password: '',
     confirmPassword: ''
   });
 
@@ -197,54 +186,8 @@ export default function AdminProfileSettingsPage() {
     }
   };
 
-  const handleCreateAdmin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!newAdminData.name.trim() || !newAdminData.email.trim() || !newAdminData.password) {
-      setMessage('All fields are required for creating an admin.');
-      setTimeout(() => setMessage(''), 3000);
-      return;
-    }
-
-    if (newAdminData.password !== newAdminData.confirmPassword) {
-      setMessage('Passwords do not match.');
-      setTimeout(() => setMessage(''), 3000);
-      return;
-    }
-
-    if (newAdminData.password.length < 8) {
-      setMessage('Password must be at least 8 characters.');
-      setTimeout(() => setMessage(''), 3000);
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(newAdminData.email)) {
-      setMessage('Please enter a valid email address.');
-      setTimeout(() => setMessage(''), 3000);
-      return;
-    }
-
-    setCreatingAdmin(true);
-    try {
-      await adminService.createAdmin({
-        name: newAdminData.name,
-        email: newAdminData.email,
-        password: newAdminData.password
-      });
-      
-      setMessage('Admin created successfully!');
-      setNewAdminData({ name: '', email: '', password: '', confirmPassword: '' });
-      setShowAddAdminModal(false);
-      setTimeout(() => setMessage(''), 3000);
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Failed to create admin.';
-      setMessage(errorMsg);
-      setTimeout(() => setMessage(''), 3000);
-    } finally {
-      setCreatingAdmin(false);
-    }
+  const handleLogout = () => {
+    userService.logout();
   };
 
   if (loading) {
@@ -277,19 +220,7 @@ export default function AdminProfileSettingsPage() {
         </div>
       )}
 
-      {/* Page Header with Add Admin Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-xl sm:text-2xl font-bold text-[#1E3A5F]">Profile Settings</h1>
-        <Button
-          type="button"
-          variant="primary"
-          className="flex items-center justify-center gap-2 w-full sm:w-auto"
-          onClick={() => setShowAddAdminModal(true)}
-        >
-          <UserPlus size={18} />
-          <span>Add Admin</span>
-        </Button>
-      </div>
+      <h1 className="text-xl sm:text-2xl font-bold text-[#1E3A5F] mb-6">Profile Settings</h1>
 
       {/* Profile Header Card */}
       <div className="bg-white rounded-2xl border border-[#E0E0E0] p-4 sm:p-6 lg:p-8 mb-6">
@@ -297,7 +228,10 @@ export default function AdminProfileSettingsPage() {
           <div className="relative">
             <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden border-4 border-[#F1F8E9]">
               <img 
-                src={getAvatarUrl(user?.avatar_url, displayName)} 
+                src={user?.avatar_url 
+                  ? (user.avatar_url.startsWith('http') ? user.avatar_url : `http://localhost:5001${user.avatar_url}`)
+                  : `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=1B8A44&color=fff&size=256`
+                } 
                 alt={displayName}
                 className="w-full h-full object-cover"
               />
@@ -393,12 +327,14 @@ export default function AdminProfileSettingsPage() {
                 type="tel"
                 value={formData.phone}
                 onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                placeholder="Enter phone number"
               />
               <Input 
                 label="Location" 
                 id="location"
                 value={formData.location}
                 onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                placeholder="Enter location"
               />
               <Button 
                 type="submit" 
@@ -475,152 +411,25 @@ export default function AdminProfileSettingsPage() {
             </form>
           </CardContent>
         </Card>
+
+        {/* Account Actions */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Account Actions</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full text-red-600 border-red-600 hover:bg-red-50 hover:text-red-700"
+              onClick={handleLogout}
+            >
+              <LogOut size={16} className="mr-2" />
+              Logout
+            </Button>
+          </CardContent>
+        </Card>
       </div>
-
-      {/* Add Admin Modal */}
-      {showAddAdminModal && (
-        <div 
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in duration-200"
-          onClick={(e) => {
-            // Close modal when clicking on backdrop
-            if (e.target === e.currentTarget && !creatingAdmin) {
-              setShowAddAdminModal(false);
-              setNewAdminData({ name: '', email: '', password: '', confirmPassword: '' });
-            }
-          }}
-        >
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="bg-white px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg sm:text-xl font-bold text-[#1E3A5F] flex items-center gap-2">
-                <UserPlus size={22} className="text-[#1E88E5]" />
-                Add New Admin
-              </h2>
-              <button
-                onClick={() => {
-                  if (!creatingAdmin) {
-                    setShowAddAdminModal(false);
-                    setNewAdminData({ name: '', email: '', password: '', confirmPassword: '' });
-                  }
-                }}
-                className="p-1.5 hover:bg-[#F5F5F5] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label="Close modal"
-                disabled={creatingAdmin}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-[#78909C]">
-                  <line x1="18" y1="6" x2="6" y2="18"></line>
-                  <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="overflow-y-auto max-h-[calc(90vh-140px)]">
-              <form onSubmit={handleCreateAdmin} className="p-6 space-y-5">
-                <div className="space-y-4">
-                  <div>
-                    <label htmlFor="admin-name" className="block text-sm font-semibold text-[#1E3A5F] mb-2">
-                      Full Name <span className="text-[#EC407A]">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="admin-name"
-                      value={newAdminData.name}
-                      onChange={(e) => setNewAdminData({ ...newAdminData, name: e.target.value })}
-                      required
-                      disabled={creatingAdmin}
-                      className="w-full px-4 py-3 border-2 border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent text-sm text-[#1E3A5F] placeholder:text-[#B0BEC5] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all"
-                      autoFocus
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="admin-email" className="block text-sm font-semibold text-[#1E3A5F] mb-2">
-                      Email Address <span className="text-[#EC407A]">*</span>
-                    </label>
-                    <input
-                      type="email"
-                      id="admin-email"
-                      value={newAdminData.email}
-                      onChange={(e) => setNewAdminData({ ...newAdminData, email: e.target.value })}
-                      required
-                      disabled={creatingAdmin}
-                      className="w-full px-4 py-3 border-2 border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent text-sm text-[#1E3A5F] placeholder:text-[#B0BEC5] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="admin-password" className="block text-sm font-semibold text-[#1E3A5F] mb-2">
-                      Password <span className="text-[#EC407A]">*</span>
-                    </label>
-                    <input
-                      type="password"
-                      id="admin-password"
-                      value={newAdminData.password}
-                      onChange={(e) => setNewAdminData({ ...newAdminData, password: e.target.value })}
-                      required
-                      disabled={creatingAdmin}
-                      className="w-full px-4 py-3 border-2 border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent text-sm text-[#1E3A5F] placeholder:text-[#B0BEC5] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all"
-                    />
-                    <p className="mt-1.5 text-xs text-[#78909C]">Password must be at least 8 characters long</p>
-                  </div>
-
-                  <div>
-                    <label htmlFor="admin-confirm-password" className="block text-sm font-semibold text-[#1E3A5F] mb-2">
-                      Confirm Password <span className="text-[#EC407A]">*</span>
-                    </label>
-                    <input
-                      type="password"
-                      id="admin-confirm-password"
-                      value={newAdminData.confirmPassword}
-                      onChange={(e) => setNewAdminData({ ...newAdminData, confirmPassword: e.target.value })}
-                      required
-                      disabled={creatingAdmin}
-                      className="w-full px-4 py-3 border-2 border-[#E0E0E0] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent text-sm text-[#1E3A5F] placeholder:text-[#B0BEC5] disabled:bg-gray-50 disabled:cursor-not-allowed transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1 py-3 text-sm font-semibold"
-                    onClick={() => {
-                      if (!creatingAdmin) {
-                        setShowAddAdminModal(false);
-                        setNewAdminData({ name: '', email: '', password: '', confirmPassword: '' });
-                      }
-                    }}
-                    disabled={creatingAdmin}
-                  >
-                    Cancel
-                  </Button>
-                  <Button 
-                    type="submit" 
-                    variant="primary"
-                    className="flex-1 py-3 text-sm font-semibold flex items-center justify-center gap-2"
-                    disabled={creatingAdmin}
-                  >
-                    {creatingAdmin ? (
-                      <>
-                        <Loader2 size={18} className="animate-spin" />
-                        <span>Creating...</span>
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus size={18} />
-                        <span>Create Admin</span>
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

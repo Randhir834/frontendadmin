@@ -142,7 +142,7 @@ export default function InstructorCourseMaterialsPage({ params }: { params: Prom
       {/* Materials List */}
       <Card>
         <CardHeader>
-          <CardTitle>Available Materials</CardTitle>
+          <CardTitle>Available Materials ({materials.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {materials.length === 0 ? (

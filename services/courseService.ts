@@ -93,4 +93,40 @@ export const courseService = {
     const response = await api.get(`/courses/${courseId}/enrollment-count`);
     return response.data;
   },
+
+  // Get course enrollments (students)
+  getCourseEnrollments: async (courseId: number, filters?: {
+    status?: string;
+    search?: string;
+    sort_by?: string;
+    sort_order?: string;
+  }) => {
+    const params = new URLSearchParams();
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+    }
+    const query = params.toString() ? `?${params.toString()}` : '';
+    const response = await api.get(`/enrollments/course/${courseId}${query}`);
+    return response.data;
+  },
+
+  // Get course enrollment statistics
+  getCourseEnrollmentStats: async (courseId: number) => {
+    const response = await api.get(`/enrollments/course/${courseId}/stats`);
+    return response.data;
+  },
+
+  // Get course materials
+  getCourseMaterials: async (courseId: number) => {
+    const response = await api.get(`/course-materials/courses/${courseId}/materials`);
+    return response.data;
+  },
+
+  // Get course sections with lessons
+  getCourseSections: async (courseId: number) => {
+    const response = await api.get(`/sections/course/${courseId}`);
+    return response.data;
+  },
 };

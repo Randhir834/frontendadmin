@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Users, Loader2, Download, Award } from 'lucide-react';
+import { Users, Loader2, Download, Award, PlusCircle } from 'lucide-react';
 import UserCard from '@/components/UserCard';
 import Button from '@/components/ui/Button';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -32,6 +32,10 @@ export default function AdminInstructorsPage() {
 
     fetchInstructors();
   }, []);
+
+  const handleCreateInstructor = () => {
+    router.push('/admin/create-instructor');
+  };
 
   const filteredUsers = users.filter((user) => {
     const matchesSpecialization = !specializationFilter || (user.specialization && user.specialization.toLowerCase().includes(specializationFilter.toLowerCase()));
@@ -123,6 +127,14 @@ export default function AdminInstructorsPage() {
               <Download size={16} />
               Export
             </Button>
+
+            <Button 
+              className="flex items-center gap-2 whitespace-nowrap"
+              onClick={handleCreateInstructor}
+            >
+              <PlusCircle size={16} />
+              Create Instructor
+            </Button>
           </div>
         </div>
         
@@ -180,6 +192,8 @@ export default function AdminInstructorsPage() {
           </div>
         </div>
       )}
+
+
     </div>
   );
 }

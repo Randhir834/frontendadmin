@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,14 +17,8 @@ export default function LoginPage() {
   const router = useRouter();
 
   // Redirect if already logged in
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push('/dashboard');
-    }
-  }, [isAuthenticated, router]);
-
-  // Don't render the form if already authenticated (redirect in progress)
   if (isAuthenticated) {
+    router.push('/dashboard');
     return null;
   }
 
@@ -93,7 +87,7 @@ export default function LoginPage() {
         <>
           Welcome to
           <br />
-          <span className="text-yellow-300">PlayFit LMS</span> <span className="text-2xl">🎓</span>
+          <span className="text-yellow-300">PlayFit</span> <span className="text-2xl">🎓</span>
         </>
       }
       leftSubtitle="Empowering administrators to oversee, manage, and deliver exceptional learning experiences."
@@ -125,6 +119,7 @@ export default function LoginPage() {
               type={inputType}
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
+              placeholder={placeholder}
               required
               className="w-full pl-9 sm:pl-11 pr-3 sm:pr-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-border text-xs sm:text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
             />
@@ -142,6 +137,7 @@ export default function LoginPage() {
               type={showPassword ? 'text' : 'password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
               required
               className="w-full pl-9 sm:pl-11 pr-9 sm:pr-11 py-2.5 sm:py-3 rounded-lg sm:rounded-xl border border-border text-xs sm:text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all"
             />

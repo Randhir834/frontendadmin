@@ -17,8 +17,8 @@ interface Assignment {
   due_date: string | null;
   max_score: number;
   is_published: boolean;
-  submission_count: number | string;
-  student_count: number | string;
+  submission_count: number;
+  student_count: number;
   created_at: string;
   updated_at: string;
 }
@@ -42,7 +42,7 @@ export default function AdminAssignmentsPage() {
   const fetchAssignments = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/assignments`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assignments`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -86,7 +86,7 @@ export default function AdminAssignmentsPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/assignments/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/assignments/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -137,6 +137,7 @@ export default function AdminAssignmentsPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
+                  placeholder="Search by title, course, or creator..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"
@@ -181,7 +182,7 @@ export default function AdminAssignmentsPage() {
           <CardContent className="p-4">
             <p className="text-sm text-text-muted mb-1">Total Submissions</p>
             <p className="text-2xl font-bold text-blue-600">
-              {assignments.reduce((sum, a) => sum + parseInt(String(a.submission_count || '0')), 0)}
+              {assignments.reduce((sum, a) => sum + a.submission_count, 0)}
             </p>
           </CardContent>
         </Card>
@@ -190,7 +191,7 @@ export default function AdminAssignmentsPage() {
           <CardContent className="p-4">
             <p className="text-sm text-text-muted mb-1">Students Engaged</p>
             <p className="text-2xl font-bold text-purple-600">
-              {assignments.reduce((sum, a) => sum + parseInt(String(a.student_count || '0')), 0)}
+              {assignments.reduce((sum, a) => sum + a.student_count, 0)}
             </p>
           </CardContent>
         </Card>

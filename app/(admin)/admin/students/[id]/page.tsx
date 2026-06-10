@@ -13,7 +13,6 @@ import { adminService } from '@/services/adminService';
 import { useRealTimeUpdates } from '@/hooks/useRealTimeUpdates';
 import { useNotifications } from '@/hooks/useNotifications';
 import type { User as UserType } from '@/types';
-import { getAvatarUrl } from '@/utils/avatarUtils';
 
 export default function StudentProfilePage() {
   const params = useParams();
@@ -176,7 +175,7 @@ export default function StudentProfilePage() {
         <div className="flex flex-col md:flex-row items-start gap-8">
           {user.avatar_url ? (
             <img 
-              src={getAvatarUrl(user.avatar_url, user.name)}
+              src={user.avatar_url.startsWith('http') ? user.avatar_url : `http://localhost:5001${user.avatar_url}`}
               alt={user.name}
               className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
               key={user.avatar_url} // Force re-render when avatar changes

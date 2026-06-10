@@ -68,7 +68,7 @@ export default function Navigation() {
           <div className="flex items-center space-x-4">
             <Link href={user.role === 'admin' ? '/admin' : '/instructor'} className="flex items-center space-x-2">
               <Shield className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-gray-900">PlayFit LMS</span>
+              <span className="text-xl font-bold text-gray-900">PlayFit</span>
             </Link>
             
             {/* Role Badge */}

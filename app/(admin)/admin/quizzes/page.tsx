@@ -43,7 +43,7 @@ export default function AdminQuizzesPage() {
   const fetchQuizzes = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quizzes`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -89,7 +89,7 @@ export default function AdminQuizzesPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/quizzes/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/quizzes/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -140,6 +140,7 @@ export default function AdminQuizzesPage() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   type="text"
+                  placeholder="Search by title, course, or creator..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500"

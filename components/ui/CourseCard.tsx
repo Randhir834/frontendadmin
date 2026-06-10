@@ -26,14 +26,14 @@ export default function CourseCard({
   linkPrefix = ''
 }: CourseCardProps) {
   const statusColors = {
-    published: 'bg-[#C5E1A5] text-[#1E88E5]',
-    archived: 'bg-[#FAFAFA] text-[#78909C]',
+    published: 'bg-[#DCFCE7] text-[#1B8A44]',
+    archived: 'bg-[#F1F5F9] text-[#64748B]',
   };
 
   const levelColors = {
     beginner: 'bg-[#EFF6FF] text-[#1E40AF]',
     intermediate: 'bg-[#FEF3C7] text-[#D97706]',
-    advanced: 'bg-[#FEE2E2] text-[#EC407A]',
+    advanced: 'bg-[#FEE2E2] text-[#DC2626]',
   };
 
   const formatPrice = (price: number) => {
@@ -59,9 +59,9 @@ export default function CourseCard({
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-200 border-[#E0E0E0] hover:border-[#1E88E5]/20 h-full flex flex-col">
+    <Link href={getViewLink()}>
+      <Card className="group hover:shadow-lg transition-all duration-200 border-[#E2E8F0] hover:border-[#1B8A44]/20 h-full flex flex-col cursor-pointer">
         <div className="relative">
-        <Link href={getViewLink()} className="block">
           {course.thumbnail_url ? (
             <img
               src={course.thumbnail_url}
@@ -69,53 +69,33 @@ export default function CourseCard({
               className="w-full h-48 object-cover rounded-t-lg"
             />
           ) : (
-            <div className="w-full h-48 bg-gradient-to-br from-[#1E88E5]/10 to-[#1E88E5]/20 rounded-t-lg flex items-center justify-center">
-              <BookOpen className="size-12 text-[#1E88E5]/60" />
+            <div className="w-full h-48 bg-gradient-to-br from-[#1B8A44]/10 to-[#1B8A44]/20 rounded-t-lg flex items-center justify-center">
+              <BookOpen className="size-12 text-[#1B8A44]/60" />
             </div>
           )}
-        </Link>
-
-        {/* Delete Button for Admin - Top Right */}
-        {userRole === 'admin' && onDelete && (
-          <div className="absolute top-2 right-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete(course.id);
-              }}
-              disabled={deleting}
-              className="px-2 py-2 bg-white/90 hover:bg-white text-red-600 hover:text-red-700 shadow-md"
-            >
-              <Trash2 className="size-4" />
-            </Button>
-          </div>
-        )}
 
         {/* Progress Bar for Students */}
         {userRole === 'student' && course.is_enrolled && course.progress !== undefined && (
           <div className="absolute bottom-0 left-0 right-0 bg-white/90 p-2">
             <div className="flex items-center gap-2 text-xs">
-              <div className="flex-1 bg-[#E0E0E0] rounded-full h-2">
+              <div className="flex-1 bg-[#E2E8F0] rounded-full h-2">
                 <div 
-                  className="bg-[#1E88E5] h-2 rounded-full transition-all duration-300"
+                  className="bg-[#1B8A44] h-2 rounded-full transition-all duration-300"
                   style={{ width: `${course.progress}%` }}
                 />
               </div>
-              <span className="text-[#78909C] font-medium">{Math.round(course.progress || 0)}%</span>
+              <span className="text-[#64748B] font-medium">{Math.round(course.progress || 0)}%</span>
             </div>
           </div>
         )}
       </div>
 
-      <CardContent className="p-4">
-        <div className="space-y-3">
+      <CardContent className="p-4 flex flex-col flex-1">
+        <div className="space-y-2 flex-1">
           {/* Title and Level */}
-          <div className="space-y-2">
+          <div className="space-y-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-[#1E3A5F] line-clamp-2 group-hover:text-[#1E88E5] transition-colors">
+              <h3 className="font-semibold text-[#1E293B] line-clamp-2 group-hover:text-[#1B8A44] transition-colors">
                 {course.title}
               </h3>
               <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${levelColors[course.level]}`}>
@@ -124,65 +104,28 @@ export default function CourseCard({
             </div>
             
             {course.description && (
-              <p className="text-sm text-[#78909C] line-clamp-2">
+              <p className="text-sm text-[#64748B] line-clamp-2">
                 {course.description}
               </p>
             )}
           </div>
 
           {/* Instructor */}
-          <div className="flex items-center gap-2 text-sm text-[#78909C]">
+          <div className="flex items-center gap-2 text-sm text-[#64748B]">
             <Users className="size-4" />
             <span className="truncate">{instructorNames}</span>
           </div>
-
-          {/* Enrollment Status for Students */}
-          {userRole === 'student' && course.is_enrolled && (
-            <div className="flex items-center gap-2 text-sm text-[#1B8A44] bg-[#DCFCE7] px-3 py-2 rounded-lg">
-              <CheckCircle2 className="size-4" />
-              <span className="font-medium">Enrolled</span>
-            </div>
-          )}
-
-          {/* Actions - Only for student role with Continue/View Details, and Edit button for instructors */}
-          {showActions && userRole !== 'admin' && (
-            <div className="flex items-center gap-2 pt-2 border-t border-[#E2E8F0]">
-              {userRole === 'student' && (
-                <Link href={getViewLink()} className="flex-1">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="w-full flex items-center gap-2"
-                  >
-                    {course.is_enrolled ? (
-                      <>
-                        <Play className="size-4" />
-                        Continue
-                      </>
-                    ) : (
-                      <>
-                        <Eye className="size-4" />
-                        View Details
-                      </>
-                    )}
-                  </Button>
-                </Link>
-              )}
-
-              {userRole === 'instructor' && getEditLink() && onEdit && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onEdit(course.id)}
-                  className="px-3"
-                >
-                  <Edit className="size-4" />
-                </Button>
-              )}
-            </div>
-          )}
         </div>
+
+        {/* Enrollment Status for Students */}
+        {userRole === 'student' && course.is_enrolled && (
+          <div className="flex items-center gap-2 text-sm text-[#1B8A44] bg-[#DCFCE7] px-3 py-2 rounded-lg">
+            <CheckCircle2 className="size-4" />
+            <span className="font-medium">Enrolled</span>
+          </div>
+        )}
       </CardContent>
     </Card>
+    </Link>
   );
 }

@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Check, X, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield } from 'lucide-react';
+import { Loader2, Check, X, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield, AlertCircle } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { courseService } from '@/services/courseService';
 import { courseMaterialService } from '@/services/courseMaterialService';
-import { adminService } from '@/services/adminService';
+import { imageUploadService } from '@/services/imageUploadService';
 import api from '@/services/api';
 
 interface InstructorOption {
@@ -34,36 +34,27 @@ export default function AdminCreateCoursePage() {
   const [courseMaterials, setCourseMaterials] = useState<CourseMaterial[]>([]);
   const [uploadingMaterials, setUploadingMaterials] = useState(false);
   const [courseImage, setCourseImage] = useState<File | null>(null);
-  const [courseImagePreview, setCourseImagePreview] = useState<string | null>(null);
+  const [courseImagePreview, setCourseImagePreview] = useState<string>('');
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string>('');
   const [form, setForm] = useState({
     title: '',
     description: '',
     price: '',
-    status: 'published' as 'published',
     duration_value: '',
     duration_unit: 'days' as 'days' | 'weeks' | 'months',
     level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     language: 'English',
+    thumbnail_url: '',
   });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const instructorsData = await adminService.getUsers('instructor');
-        console.log('Instructors response:', instructorsData);
-        const fetchedInstructors = instructorsData.users || [];
-        console.log('Fetched instructors:', fetchedInstructors);
-        setInstructors(fetchedInstructors);
-      } catch (error: any) {
-        console.error('Failed to fetch instructors:', error);
-        console.error('Error details:', {
-          status: error?.response?.status,
-          statusText: error?.response?.statusText,
-          data: error?.response?.data,
-          message: error?.message,
-        });
-        setInstructors([]);
+        const instructorsRes = await api.get('/admin/users?role=instructor');
+        setInstructors(instructorsRes.data.users || []);
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
       }
     };
     fetchData();
@@ -113,65 +104,49 @@ export default function AdminCreateCoursePage() {
   };
 
   // Course Image Upload Functions
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    
     if (!file) return;
 
-    // Validate file type
-    if (!['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(file.type)) {
-      alert('Please upload a valid image (JPEG, PNG, WebP, or GIF)');
-      return;
-    }
-
-    // Validate file size (max 10MB)
-    const maxSize = 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      alert('Image size must be less than 10MB');
-      return;
-    }
-
-    setCourseImage(file);
+    setImageError('');
+    const validation = imageUploadService.validateImage(file);
     
+    if (!validation.valid) {
+      setImageError(validation.error || 'Invalid image');
+      return;
+    }
+
     // Create preview
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setCourseImagePreview(reader.result as string);
+    reader.onload = (event) => {
+      setCourseImagePreview(event.target?.result as string);
     };
     reader.readAsDataURL(file);
 
-    // Reset file input
+    setCourseImage(file);
     e.target.value = '';
-  };
-
-  const removeImage = () => {
-    setCourseImage(null);
-    setCourseImagePreview(null);
   };
 
   const uploadCourseImage = async (): Promise<string | null> => {
     if (!courseImage) return null;
 
-    setUploadingImage(true);
-    
     try {
-      const formData = new FormData();
-      formData.append('file', courseImage);
-      formData.append('folder', 'course-images');
-
-      const response = await api.post('/storage/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      });
-
-      return response.data.file.publicUrl;
-    } catch (error) {
-      console.error('Failed to upload image:', error);
-      throw new Error('Failed to upload course image');
+      setUploadingImage(true);
+      const result = await imageUploadService.uploadImage(courseImage, 'course-thumbnails');
+      return result.publicUrl;
+    } catch (error: any) {
+      const message = error?.response?.data?.error || 'Failed to upload image';
+      setImageError(message);
+      return null;
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  const removeCourseImage = () => {
+    setCourseImage(null);
+    setCourseImagePreview('');
+    setImageError('');
   };
 
   // Course Materials Functions
@@ -265,6 +240,11 @@ export default function AdminCreateCoursePage() {
       return;
     }
 
+    if (!form.description.trim()) {
+      alert('Course description is required');
+      return;
+    }
+
     if (selectedInstructors.length === 0) {
       alert('Please select at least one instructor');
       return;
@@ -273,14 +253,17 @@ export default function AdminCreateCoursePage() {
     try {
       setLoading(true);
       
-      // Step 1: Upload course image if provided
-      let thumbnailUrl: string = '';
+      let thumbnailUrl = form.thumbnail_url;
+
+      // Step 0: Upload course image if provided
       if (courseImage) {
         const uploadedUrl = await uploadCourseImage();
-        if (!uploadedUrl) {
-          throw new Error('Failed to upload course image');
+        if (uploadedUrl) {
+          thumbnailUrl = uploadedUrl;
+        } else {
+          alert('Failed to upload course image. Please try again.');
+          return;
         }
-        thumbnailUrl = uploadedUrl;
       }
       
       const courseData = {
@@ -293,11 +276,11 @@ export default function AdminCreateCoursePage() {
         instructor_ids: selectedInstructors,
       };
 
-      // Step 2: Create the course
+      // Step 1: Create the course
       const response = await courseService.createCourse(courseData);
       
       if (response.course) {
-        // Step 3: Upload course materials if any
+        // Step 2: Upload course materials if any
         if (courseMaterials.length > 0) {
           try {
             await uploadCourseMaterials(response.course.id);
@@ -312,7 +295,7 @@ export default function AdminCreateCoursePage() {
         router.push(`/admin/courses/${response.course.id}`);
       }
     } catch (error: any) {
-      const message = error?.response?.data?.error || error.message || 'Failed to create course';
+      const message = error?.response?.data?.error || 'Failed to create course';
       alert(message);
     } finally {
       setLoading(false);
@@ -323,8 +306,8 @@ export default function AdminCreateCoursePage() {
     <div className="p-4 md:p-8 max-w-[1000px] mx-auto space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl md:text-2xl font-bold text-[#1E3A5F]">Create New Course</h1>
-        <p className="text-sm text-[#78909C] mt-1">
+        <h1 className="text-xl md:text-2xl font-bold text-[#1E293B]">Create New Course</h1>
+        <p className="text-sm text-[#64748B] mt-1">
           Add a new course to the platform
         </p>
       </div>
@@ -344,6 +327,7 @@ export default function AdminCreateCoursePage() {
                 name="title"
                 value={form.title}
                 onChange={handleChange}
+                placeholder="Enter course title"
                 required
               />
             </div>
@@ -357,65 +341,76 @@ export default function AdminCreateCoursePage() {
                 value={form.description}
                 onChange={handleChange}
                 rows={4}
-                className="w-full px-3 py-2 border border-[#E0E0E0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent resize-none"
+                placeholder="Describe what this course is about..."
+                className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] focus:border-transparent resize-none"
               />
             </div>
 
+            {/* Course Image Upload */}
             <div>
               <label className="block text-sm font-medium text-[#374151] mb-2">
-                Course Image
+                Course Thumbnail Image
               </label>
-              <div className="space-y-4">
-                {/* Image Preview */}
-                {courseImagePreview && (
-                  <div className="relative w-full">
+              
+              {imageError && (
+                <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+                  <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-700">{imageError}</p>
+                </div>
+              )}
+
+              {!courseImagePreview ? (
+                <div className="border-2 border-dashed border-[#E2E8F0] rounded-lg p-6 text-center hover:border-[#1B8A44] transition-colors">
+                  <input
+                    type="file"
+                    id="course-image"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    onChange={handleImageSelect}
+                    className="hidden"
+                    disabled={uploadingImage}
+                  />
+                  <label htmlFor="course-image" className="cursor-pointer">
+                    <Image className="h-12 w-12 text-[#64748B] mx-auto mb-2" />
+                    <h3 className="text-sm font-medium text-[#1E293B] mb-1">
+                      Upload Course Image
+                    </h3>
+                    <p className="text-xs text-[#64748B] mb-3">
+                      Click to browse or drag and drop
+                    </p>
+                  </label>
+                </div>
+              ) : (
+                <div className="border border-[#E2E8F0] rounded-lg p-4 space-y-3">
+                  <div className="relative">
                     <img
                       src={courseImagePreview}
-                      alt="Course preview"
-                      className="w-full h-48 object-cover rounded-lg border border-[#E0E0E0]"
+                      alt="Course thumbnail preview"
+                      className="w-full h-48 object-cover rounded-lg"
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      onClick={removeImage}
+                      onClick={removeCourseImage}
                       className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white"
                     >
-                      <X className="size-4" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                )}
-
-                {/* Image Upload Area */}
-                {!courseImagePreview && (
-                  <div className="border-2 border-dashed border-[#E0E0E0] rounded-lg p-6 text-center hover:border-[#1E88E5] transition-colors">
-                    <input
-                      type="file"
-                      id="course-image"
-                      accept="image/jpeg,image/png,image/webp,image/gif"
-                      onChange={handleImageSelect}
-                      className="hidden"
-                      disabled={uploadingImage}
-                    />
-                    <label htmlFor="course-image" className="cursor-pointer">
-                      <Image className="h-12 w-12 text-[#78909C] mx-auto mb-4" />
-                      <h3 className="text-lg font-medium text-[#1E3A5F] mb-2">
-                        Upload Course Image
-                      </h3>
-                      <p className="text-sm text-[#78909C]">
-                        Click to select an image or drag and drop
-                      </p>
-                    </label>
+                  <div className="text-sm text-[#64748B]">
+                    <p><strong>File:</strong> {courseImage?.name}</p>
+                    <p><strong>Size:</strong> {imageUploadService.formatFileSize(courseImage?.size || 0)}</p>
                   </div>
-                )}
-
-                <div className="text-xs text-[#78909C] bg-[#FAFAFA] p-3 rounded-lg">
-                  <strong>Supported formats:</strong> JPEG, PNG, WebP, GIF
-                  <br />
-                  <strong>Maximum file size:</strong> 10MB
-                  <br />
-                  <strong>Recommended dimensions:</strong> 16:9 aspect ratio (1280×720px or larger)
                 </div>
+              )}
+
+              <div className="mt-2 text-xs text-[#64748B] bg-[#F8FAFC] p-3 rounded-lg">
+                <strong>Requirements:</strong>
+                <ul className="list-disc list-inside mt-1 space-y-1">
+                  <li>Supported formats: JPEG, PNG, WebP, GIF</li>
+                  <li>Maximum file size: 5MB</li>
+                  <li>Recommended dimensions: 1200x675px (16:9 aspect ratio)</li>
+                </ul>
               </div>
             </div>
           </CardContent>
@@ -439,6 +434,7 @@ export default function AdminCreateCoursePage() {
                   step="0.01"
                   value={form.price}
                   onChange={handleChange}
+                  placeholder="0"
                 />
               </div>
               
@@ -450,7 +446,7 @@ export default function AdminCreateCoursePage() {
                   name="level"
                   value={form.level}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-[#E0E0E0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] focus:border-transparent"
                 >
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
@@ -466,6 +462,7 @@ export default function AdminCreateCoursePage() {
                   name="language"
                   value={form.language}
                   onChange={handleChange}
+                  placeholder="English"
                 />
               </div>
             </div>
@@ -481,6 +478,7 @@ export default function AdminCreateCoursePage() {
                   min="1"
                   value={form.duration_value}
                   onChange={handleChange}
+                  placeholder="1"
                 />
               </div>
               
@@ -492,7 +490,7 @@ export default function AdminCreateCoursePage() {
                   name="duration_unit"
                   value={form.duration_unit}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-[#E0E0E0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] focus:border-transparent"
                 >
                   <option value="days">Days</option>
                   <option value="weeks">Weeks</option>
@@ -514,6 +512,7 @@ export default function AdminCreateCoursePage() {
                 <Input
                   value={item}
                   onChange={(e) => updateWhatYouLearnItem(index, e.target.value)}
+                  placeholder="Enter a learning outcome"
                   className="flex-1"
                 />
                 <Button
@@ -552,6 +551,7 @@ export default function AdminCreateCoursePage() {
                 <Input
                   value={item}
                   onChange={(e) => updateRequirementItem(index, e.target.value)}
+                  placeholder="Enter a requirement"
                   className="flex-1"
                 />
                 <Button
@@ -586,7 +586,7 @@ export default function AdminCreateCoursePage() {
           </CardHeader>
           <CardContent>
             {instructors.length === 0 ? (
-              <p className="text-sm text-[#78909C]">No instructors available</p>
+              <p className="text-sm text-[#64748B]">No instructors available</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {instructors.map((instructor) => (
@@ -594,18 +594,18 @@ export default function AdminCreateCoursePage() {
                     key={instructor.id}
                     className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                       selectedInstructors.includes(instructor.id)
-                        ? 'border-[#1E88E5] bg-[#1E88E5]/5'
-                        : 'border-[#E0E0E0] hover:border-[#1E88E5]/50'
+                        ? 'border-[#1B8A44] bg-[#1B8A44]/5'
+                        : 'border-[#E2E8F0] hover:border-[#1B8A44]/50'
                     }`}
                     onClick={() => toggleInstructor(instructor.id)}
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <h4 className="font-medium text-[#1E3A5F]">{instructor.name}</h4>
-                        <p className="text-sm text-[#78909C]">{instructor.email}</p>
+                        <h4 className="font-medium text-[#1E293B]">{instructor.name}</h4>
+                        <p className="text-sm text-[#64748B]">{instructor.email}</p>
                       </div>
                       {selectedInstructors.includes(instructor.id) && (
-                        <Check className="size-5 text-[#1E88E5]" />
+                        <Check className="size-5 text-[#1B8A44]" />
                       )}
                     </div>
                   </div>
@@ -622,14 +622,14 @@ export default function AdminCreateCoursePage() {
               <Shield className="h-5 w-5 text-blue-600" />
               <span>Secure Course Materials</span>
             </CardTitle>
-            <p className="text-sm text-[#78909C] mt-1">
+            <p className="text-sm text-[#64748B] mt-1">
               Upload PDFs, PPTs, and images that will be securely accessible only to assigned instructors.
               Files are protected against downloads and screenshots.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* File Upload Area */}
-            <div className="border-2 border-dashed border-[#E0E0E0] rounded-lg p-6 text-center hover:border-[#1E88E5] transition-colors">
+            <div className="border-2 border-dashed border-[#E2E8F0] rounded-lg p-6 text-center hover:border-[#1B8A44] transition-colors">
               <input
                 type="file"
                 id="course-materials"
@@ -639,20 +639,17 @@ export default function AdminCreateCoursePage() {
                 className="hidden"
               />
               <label htmlFor="course-materials" className="cursor-pointer">
-                <Upload className="h-12 w-12 text-[#78909C] mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-[#1E3A5F] mb-2">
+                <Upload className="h-12 w-12 text-[#64748B] mx-auto mb-4" />
+                <h3 className="text-lg font-medium text-[#1E293B] mb-2">
                   Upload Course Materials
                 </h3>
-                <p className="text-sm text-[#78909C] mb-4">
+                <p className="text-sm text-[#64748B] mb-4">
                   Drag and drop files here, or click to browse
                 </p>
-                <Button type="button" variant="outline">
-                  Select Files
-                </Button>
               </label>
             </div>
 
-            <div className="text-xs text-[#78909C] bg-[#FAFAFA] p-3 rounded-lg">
+            <div className="text-xs text-[#64748B] bg-[#F8FAFC] p-3 rounded-lg">
               <strong>Supported formats:</strong> PDF, PPT, Word documents, Images (JPEG, PNG, WebP, GIF)
               <br />
               <strong>Maximum file size:</strong> 100MB per file
@@ -663,24 +660,24 @@ export default function AdminCreateCoursePage() {
             {/* Uploaded Materials List */}
             {courseMaterials.length > 0 && (
               <div className="space-y-3">
-                <h4 className="font-medium text-[#1E3A5F] flex items-center space-x-2">
+                <h4 className="font-medium text-[#1E293B] flex items-center space-x-2">
                   <FileText className="h-4 w-4" />
-                  <span>Materials to Upload</span>
+                  <span>Materials to Upload ({courseMaterials.length})</span>
                 </h4>
                 
                 {courseMaterials.map((material) => (
                   <div
                     key={material.id}
-                    className="border border-[#E0E0E0] rounded-lg p-4 space-y-3"
+                    className="border border-[#E2E8F0] rounded-lg p-4 space-y-3"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-center space-x-3 flex-1">
                         {getFileIcon(material.file)}
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-[#1E3A5F] truncate">
+                          <p className="font-medium text-[#1E293B] truncate">
                             {material.file.name}
                           </p>
-                          <p className="text-sm text-[#78909C]">
+                          <p className="text-sm text-[#64748B]">
                             {courseMaterialService.formatFileSize(material.file.size)}
                           </p>
                         </div>
@@ -704,6 +701,7 @@ export default function AdminCreateCoursePage() {
                         <Input
                           value={material.title}
                           onChange={(e) => updateMaterialTitle(material.id, e.target.value)}
+                          placeholder="Enter material title"
                         />
                       </div>
                       <div>
@@ -713,6 +711,7 @@ export default function AdminCreateCoursePage() {
                         <Input
                           value={material.description}
                           onChange={(e) => updateMaterialDescription(material.id, e.target.value)}
+                          placeholder="Optional description"
                         />
                       </div>
                     </div>

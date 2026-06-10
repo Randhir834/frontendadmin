@@ -64,13 +64,9 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
           sort_by: 'enrolled_at',
           sort_order: 'desc'
         });
-        console.log('Enrollments API Response:', res);
-        console.log('Enrollments data:', res.enrollments);
-        console.log('Setting students:', res.enrollments || []);
         setStudents(res.enrollments || []);
       } catch (error) {
         console.error('Failed to fetch students:', error);
-        console.error('Error details:', error);
         setStudents([]);
       } finally {
         setStudentsLoading(false);
@@ -102,23 +98,12 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
   }, [course]);
 
   const filteredStudents = useMemo(() => {
-    console.log('====== STUDENTS DEBUG ======');
-    console.log('students state:', students);
-    console.log('students length:', students?.length);
-    console.log('searchTerm:', searchTerm);
-    
-    if (!searchTerm) {
-      console.log('Returning all students (no search term)');
-      return students;
-    }
+    if (!searchTerm) return students;
     const lower = searchTerm.toLowerCase();
-    const filtered = students.filter(s => 
+    return students.filter(s => 
       s.student_name.toLowerCase().includes(lower) || 
       s.student_email.toLowerCase().includes(lower)
     );
-    console.log('Filtered students:', filtered);
-    console.log('===========================');
-    return filtered;
   }, [students, searchTerm]);
 
   const levelLabel: Record<string, string> = {
@@ -338,23 +323,6 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
               </div>
             </CardHeader>
             <CardContent>
-              {/* Debug Info */}
-              <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-xs">
-                <strong>Debug Info:</strong>
-                <div>Students array length: {students.length}</div>
-                <div>Filtered students length: {filteredStudents.length}</div>
-                <div>Loading: {studentsLoading ? 'Yes' : 'No'}</div>
-                <div>Search term: "{searchTerm}"</div>
-                {students.length > 0 && (
-                  <div className="mt-2">
-                    <strong>Raw students data:</strong>
-                    <pre className="text-xs bg-white p-2 rounded mt-1 overflow-auto max-h-32">
-                      {JSON.stringify(students, null, 2)}
-                    </pre>
-                  </div>
-                )}
-              </div>
-              
               {studentsLoading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="size-6 animate-spin text-[#1B8A44]" />

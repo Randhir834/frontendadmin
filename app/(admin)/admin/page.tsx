@@ -20,6 +20,7 @@ export default function AdminHomePage() {
           totalStudents: 0,
           totalInstructors: 0,
           totalCourses: 0,
+          totalEnrollments: 0,
           totalRevenue: 0
         });
       } catch (error) {
@@ -29,6 +30,7 @@ export default function AdminHomePage() {
           totalStudents: 0,
           totalInstructors: 0,
           totalCourses: 0,
+          totalEnrollments: 0,
           totalRevenue: 0
         });
       } finally {

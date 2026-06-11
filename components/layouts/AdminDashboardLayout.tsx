@@ -74,14 +74,14 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
 
   if (!mounted) {
     return (
-      <div className="min-h-screen bg-[#F7FAFC] flex items-center justify-center">
+      <div className="min-h-screen bg-[#F5F5F5] flex items-center justify-center">
         <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#F7FAFC] flex">
+    <div className="min-h-screen bg-[#F5F5F5] flex">
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -92,7 +92,7 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
 
       {/* Left Sidebar — mobile drawer, desktop fixed */}
       <aside
-        className={`bg-white border-r border-[#E2E8F0] flex flex-col z-50
+        className={`bg-white border-r border-[#E0E0E0] flex flex-col z-50
           fixed inset-y-0 left-0 transform transition-transform duration-300 ease-in-out
           ${mobileOpen ? 'translate-x-0' : '-translate-x-full'}
           lg:translate-x-0 lg:flex
@@ -100,7 +100,7 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
         `}
       >
         {/* Logo */}
-        <div className="relative border-b border-[#E2E8F0] lg:border-none flex items-center justify-center px-3 py-4 sm:px-4 sm:py-5 lg:px-5 lg:py-6 shrink-0">
+        <div className="relative border-b border-[#E0E0E0] lg:border-none flex items-center justify-center px-3 py-4 sm:px-4 sm:py-5 lg:px-5 lg:py-6 shrink-0">
           <div className="relative flex items-center justify-center shrink-0 transition-all duration-300 w-full h-12 sm:h-14 md:h-16 lg:h-20">
             <img
               src="/images/navbarlogo.png"
@@ -110,7 +110,7 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
           </div>
           <button
             onClick={() => setMobileOpen(false)}
-            className="absolute right-4 top-4 lg:hidden p-1.5 rounded-md hover:bg-[#F1F5F9] text-[#64748B]"
+            className="absolute right-4 top-4 lg:hidden p-1.5 rounded-md hover:bg-[#FAFAFA] text-[#78909C]"
           >
             <X size={20} />
           </button>
@@ -131,7 +131,7 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
                   className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 lg:px-3 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm transition-colors ${
                     isActive
                       ? 'bg-[#EFF6FF] text-[#1E88E5] font-medium'
-                      : 'text-[#475569] hover:bg-[#F1F5F9] hover:text-[#1E88E5]'
+                      : 'text-[#546E7A] hover:bg-[#FAFAFA] hover:text-[#1E88E5]'
                   }`}
                 >
                   <item.icon size={16} className="shrink-0 sm:size-[18px]" />
@@ -146,13 +146,13 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 lg:ml-[12.5rem] lg:h-screen lg:overflow-y-auto no-scrollbar">
         {/* Top Header */}
-        <header className="bg-white border-b border-[#E2E8F0] px-4 sm:px-6 lg:px-8 py-1 lg:py-1.5 sticky top-0 z-20">
+        <header className="bg-white border-b border-[#E0E0E0] px-4 sm:px-6 lg:px-8 py-1 lg:py-1.5 sticky top-0 z-20">
           <div className="flex items-center justify-between gap-4">
             <div className="flex-1 flex items-center gap-3">
               {/* Mobile hamburger */}
               <button
                 onClick={() => setMobileOpen(true)}
-                className="lg:hidden p-2 rounded-md hover:bg-[#F1F5F9] text-[#64748B]"
+                className="lg:hidden p-2 rounded-md hover:bg-[#FAFAFA] text-[#78909C]"
                 aria-label="Open menu"
               >
                 <Menu size={20} />
@@ -164,17 +164,17 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-              <button className="relative p-2 text-[#64748B] hover:text-[#1E88E5] transition-colors hidden sm:block">
+              <button className="relative p-2 text-[#78909C] hover:text-[#1E88E5] transition-colors hidden sm:block">
                 <Bell size={20} />
                 <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#DC2626] text-white text-xs rounded-full flex items-center justify-center font-medium">3</span>
               </button>
-              <button className="relative p-2 text-[#64748B] hover:text-[#1E88E5] transition-colors hidden sm:block">
+              <button className="relative p-2 text-[#78909C] hover:text-[#1E88E5] transition-colors hidden sm:block">
                 <Mail size={20} />
                 <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#DC2626] text-white text-xs rounded-full flex items-center justify-center font-medium">2</span>
               </button>
 
               {/* Profile Display */}
-              <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-[#E2E8F0] py-1">
+              <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-[#E0E0E0] py-1">
                 {userLoading ? (
                   <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gray-200 animate-pulse" />
                 ) : (
@@ -185,14 +185,14 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
                   />
                 )}
                 <div className="hidden sm:block text-right">
-                  <p className="text-sm font-semibold text-[#1E293B]">{displayName}</p>
-                  <p className="text-xs text-[#64748B]">Admin</p>
+                  <p className="text-sm font-semibold text-[#1E3A5F]">{displayName}</p>
+                  <p className="text-xs text-[#78909C]">Admin</p>
                 </div>
 
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="sm:hidden p-2 rounded-lg border border-[#FECACA] bg-white text-[#DC2626] hover:text-[#B91C1C] hover:bg-[#FEF2F2] transition-colors"
+                  className="sm:hidden p-2 rounded-lg border border-[#FECACA] bg-white text-[#EC407A] hover:text-[#B91C1C] hover:bg-[#FEF2F2] transition-colors"
                   aria-label="Logout"
                 >
                   <LogOut size={18} />
@@ -201,7 +201,7 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
                 <button
                   type="button"
                   onClick={handleLogout}
-                  className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#FECACA] bg-white text-[#DC2626] text-sm font-semibold hover:bg-[#FEF2F2] transition-colors"
+                  className="hidden sm:inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border border-[#FECACA] bg-white text-[#EC407A] text-sm font-semibold hover:bg-[#FEF2F2] transition-colors"
                   aria-label="Logout"
                 >
                   <LogOut size={16} />

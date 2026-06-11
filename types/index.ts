@@ -301,6 +301,7 @@ export interface EnrollmentStats {
   students_completed_course: number;
   new_enrollments_week: number;
   new_enrollments_month: number;
+  average_progress?: number;
 }
 
 export interface DashboardStats {

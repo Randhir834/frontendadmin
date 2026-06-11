@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { Calendar, Clock, Users, Loader2, Plus, Edit2, Trash2, ExternalLink, AlertCircle, Search } from 'lucide-react';
-import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import { Calendar, Clock, Loader2, Trash2, ExternalLink, AlertCircle, Search, Video, BookOpen, User } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { liveClassService } from '@/services/liveClassService';
 import type { LiveClass } from '@/types';
@@ -10,7 +9,7 @@ import type { LiveClass } from '@/types';
 function AdminLiveClassManagementContent() {
   const [classes, setClasses] = useState<LiveClass[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'upcoming' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'live' | 'completed'>('upcoming');
   const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
 
@@ -44,13 +43,24 @@ function AdminLiveClassManagementContent() {
     }
   };
 
-  const filteredClasses = classes.filter(c => {
-    const scheduledDate = new Date(c.scheduled_at);
+  const getClassStatus = (scheduledAt: string, durationMinutes: number) => {
     const now = new Date();
+    const scheduledDate = new Date(scheduledAt);
+    const endDate = new Date(scheduledDate.getTime() + durationMinutes * 60000);
+
+    if (now < scheduledDate) return 'upcoming';
+    if (now >= scheduledDate && now <= endDate) return 'live';
+    return 'completed';
+  };
+
+  const filteredClasses = classes.filter(c => {
+    const status = getClassStatus(c.scheduled_at, c.duration_minutes);
+    
     const matchesFilter = 
       filter === 'all' || 
-      (filter === 'upcoming' && scheduledDate > now) ||
-      (filter === 'completed' && scheduledDate <= now);
+      (filter === 'upcoming' && status === 'upcoming') ||
+      (filter === 'live' && status === 'live') ||
+      (filter === 'completed' && status === 'completed');
     
     const matchesSearch = 
       searchTerm === '' ||
@@ -63,60 +73,99 @@ function AdminLiveClassManagementContent() {
 
   const stats = {
     total: classes.length,
-    upcoming: classes.filter(c => new Date(c.scheduled_at) > new Date()).length,
-    completed: classes.filter(c => new Date(c.scheduled_at) <= new Date()).length,
+    upcoming: classes.filter(c => getClassStatus(c.scheduled_at, c.duration_minutes) === 'upcoming').length,
+    live: classes.filter(c => getClassStatus(c.scheduled_at, c.duration_minutes) === 'live').length,
+    completed: classes.filter(c => getClassStatus(c.scheduled_at, c.duration_minutes) === 'completed').length,
   };
 
-  const formatDateTime = (dateString: string) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return date.toLocaleString('en-IN', {
-      year: 'numeric',
+    return date.toLocaleDateString('en-IN', {
       month: 'short',
       day: 'numeric',
+      year: 'numeric',
+    });
+  };
+
+  const formatTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString('en-IN', {
       hour: '2-digit',
       minute: '2-digit',
       hour12: true,
     });
   };
 
+  if (loading) {
+    return (
+      <div className="p-4 md:p-8 max-w-[1400px] mx-auto">
+        <div className="flex flex-col items-center justify-center py-20">
+          <Loader2 className="size-12 animate-spin text-[#1B8A44] mb-4" />
+          <p className="text-[#64748B] text-sm">Loading live classes...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 md:p-8 max-w-[1400px] mx-auto space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-[#1E293B]">Live Class Management</h1>
-          <p className="text-sm text-[#64748B] mt-1">
-            Monitor and manage all live classes across the platform
-          </p>
+          <h1 className="text-3xl font-bold text-[#1E293B] mb-2">Live Class Management</h1>
+          <p className="text-[#64748B]">Monitor and manage all live classes across the platform</p>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-white rounded-lg border border-[#E2E8F0] p-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-blue-50 rounded-lg">
+              <Video className="size-5 text-blue-600" />
+            </div>
+            <div>
               <div className="text-2xl font-bold text-[#1E293B]">{stats.total}</div>
-              <div className="text-sm text-[#64748B]">Total Classes</div>
+              <div className="text-xs text-[#64748B]">Total Classes</div>
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[#1B8A44]">{stats.upcoming}</div>
-              <div className="text-sm text-[#64748B]">Upcoming</div>
+          </div>
+        </div>
+        
+        <div className="bg-white rounded-lg border border-[#E2E8F0] p-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-green-50 rounded-lg">
+              <Calendar className="size-5 text-green-600" />
             </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[#7C3AED]">{stats.completed}</div>
-              <div className="text-sm text-[#64748B]">Completed</div>
+            <div>
+              <div className="text-2xl font-bold text-[#1E293B]">{stats.upcoming}</div>
+              <div className="text-xs text-[#64748B]">Upcoming</div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-[#E2E8F0] p-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-red-50 rounded-lg">
+              <div className="size-2 bg-red-600 rounded-full animate-pulse" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-[#1E293B]">{stats.live}</div>
+              <div className="text-xs text-[#64748B]">Live Now</div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg border border-[#E2E8F0] p-6">
+          <div className="flex items-center gap-3">
+            <div className="p-3 bg-purple-50 rounded-lg">
+              <Clock className="size-5 text-purple-600" />
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-[#1E293B]">{stats.completed}</div>
+              <div className="text-xs text-[#64748B]">Completed</div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -127,147 +176,158 @@ function AdminLiveClassManagementContent() {
         </div>
       )}
 
-      {/* Search and Filter */}
-      <div className="space-y-4">
-        {/* Search Bar */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-[#64748B]" />
-          <input
-            type="text"
-            placeholder="Search by class title, course, or instructor..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 text-sm"
-          />
-        </div>
-
-        {/* Filter Tabs */}
-        <div className="flex items-center gap-2 border-b border-[#E2E8F0]">
-          {[
-            { key: 'upcoming' as const, label: 'Upcoming', count: stats.upcoming },
-            { key: 'completed' as const, label: 'Completed', count: stats.completed },
-            { key: 'all' as const, label: 'All Classes', count: stats.total },
-          ].map((tab) => (
-            <button
-              key={tab.key}
-              onClick={() => setFilter(tab.key)}
-              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                filter === tab.key
-                  ? 'border-[#1B8A44] text-[#1B8A44]'
-                  : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
-              }`}
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
-        </div>
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-[#64748B]" />
+        <input
+          type="text"
+          placeholder="Search by class title, course, or instructor..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full pl-10 pr-4 py-2.5 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] focus:border-transparent text-sm"
+        />
       </div>
 
-      {/* Live Classes List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-8 animate-spin text-[#1B8A44]" />
+      {/* Filter Tabs */}
+      <div className="flex items-center gap-2 overflow-x-auto border-b border-[#E2E8F0]">
+        {[
+          { key: 'upcoming' as const, label: 'Upcoming' },
+          { key: 'live' as const, label: 'Live Now' },
+          { key: 'completed' as const, label: 'Completed' },
+          { key: 'all' as const, label: 'All Classes' },
+        ].map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setFilter(tab.key)}
+            className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              filter === tab.key
+                ? 'border-[#1B8A44] text-[#1B8A44]'
+                : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Live Classes Grid */}
+      {filteredClasses.length === 0 ? (
+        <div className="bg-white rounded-lg border border-[#E2E8F0] p-16 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 bg-[#F8FAFC] rounded-full mb-4">
+            <Video className="size-8 text-[#CBD5E1]" />
+          </div>
+          <h3 className="text-lg font-semibold text-[#1E293B] mb-2">
+            {classes.length === 0 ? 'No Live Classes Scheduled' : `No ${filter === 'all' ? '' : filter} classes`}
+          </h3>
+          <p className="text-sm text-[#64748B] max-w-md mx-auto">
+            {classes.length === 0
+              ? 'No live classes have been scheduled yet by instructors.'
+              : 'Try adjusting your search or filter to see other classes.'}
+          </p>
         </div>
-      ) : filteredClasses.length === 0 ? (
-        <Card>
-          <CardContent>
-            <div className="text-center py-12">
-              <Calendar className="size-12 text-[#CBD5E1] mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-[#1E293B] mb-2">
-                {classes.length === 0 ? 'No live classes scheduled' : 'No classes found'}
-              </h3>
-              <p className="text-sm text-[#64748B]">
-                {classes.length === 0
-                  ? 'No live classes have been scheduled yet.'
-                  : 'Try adjusting your search or filter.'}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredClasses.map((liveClass) => {
-            const isUpcoming = new Date(liveClass.scheduled_at) > new Date();
+            const status = getClassStatus(liveClass.scheduled_at, liveClass.duration_minutes);
+            const statusConfig = {
+              upcoming: { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200', label: 'Upcoming' },
+              live: { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', label: 'Live Now' },
+              completed: { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200', label: 'Completed' },
+            };
+            
+            const config = statusConfig[status];
+
             return (
-              <Card key={liveClass.id} className="hover:shadow-md transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
-                    {/* Class Info */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-3">
-                        <div className={`p-2 rounded-lg flex-shrink-0 ${
-                          isUpcoming ? 'bg-[#1B8A44]/10' : 'bg-[#64748B]/10'
-                        }`}>
-                          <Calendar className={`size-5 ${
-                            isUpcoming ? 'text-[#1B8A44]' : 'text-[#64748B]'
-                          }`} />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="text-lg font-semibold text-[#1E293B] truncate">
-                            {liveClass.title}
-                          </h3>
-                          <p className="text-sm text-[#64748B] mt-1">
-                            Course: {liveClass.course_title}
-                          </p>
-                          {liveClass.instructor_name && (
-                            <p className="text-sm text-[#64748B] mt-1">
-                              Instructor: {liveClass.instructor_name}
-                            </p>
-                          )}
-                          {liveClass.description && (
-                            <p className="text-sm text-[#64748B] mt-2 line-clamp-2">
-                              {liveClass.description}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Date, Time, Duration */}
-                      <div className="flex flex-wrap gap-4 mt-4 text-sm">
-                        <div className="flex items-center gap-2 text-[#64748B]">
-                          <Calendar className="size-4" />
-                          {formatDateTime(liveClass.scheduled_at)}
-                        </div>
-                        <div className="flex items-center gap-2 text-[#64748B]">
-                          <Clock className="size-4" />
-                          {liveClass.duration_minutes} min
-                        </div>
-                      </div>
+              <div 
+                key={liveClass.id} 
+                className="bg-white rounded-lg border border-[#E2E8F0] overflow-hidden hover:shadow-lg transition-all group"
+              >
+                {/* Thumbnail */}
+                <div className="relative h-40 bg-gradient-to-br from-[#1B8A44] to-[#15803d] overflow-hidden">
+                  {liveClass.thumbnail_url ? (
+                    <img 
+                      src={liveClass.thumbnail_url} 
+                      alt={liveClass.title}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full">
+                      <Video className="size-12 text-white/50" />
                     </div>
+                  )}
+                  
+                  {/* Status Badge */}
+                  <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-xs font-semibold border ${config.bg} ${config.text} ${config.border} flex items-center gap-1`}>
+                    {status === 'live' && (
+                      <div className="size-2 bg-red-600 rounded-full animate-pulse" />
+                    )}
+                    {config.label}
+                  </div>
+                </div>
 
-                    {/* Actions */}
-                    <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                      <a
-                        href={liveClass.meet_link}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center justify-center gap-2 px-4 py-2 bg-[#1B8A44] text-white rounded-lg hover:bg-[#157a35] transition-colors text-sm font-medium"
-                      >
-                        <ExternalLink className="size-4" />
-                        <span className="hidden sm:inline">Open Meet</span>
-                        <span className="sm:hidden">Meet</span>
-                      </a>
-                      <button
-                        onClick={() => {
-                          // TODO: Implement edit functionality
-                          alert('Edit functionality coming soon');
-                        }}
-                        className="flex items-center justify-center gap-2 px-4 py-2 border border-[#E2E8F0] text-[#1E293B] rounded-lg hover:bg-[#F8FAFC] transition-colors text-sm font-medium"
-                      >
-                        <Edit2 className="size-4" />
-                        <span className="hidden sm:inline">Edit</span>
-                      </button>
-                      <button
-                        onClick={() => handleDelete(liveClass.id)}
-                        className="flex items-center justify-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
-                      >
-                        <Trash2 className="size-4" />
-                        <span className="hidden sm:inline">Delete</span>
-                      </button>
+                {/* Content */}
+                <div className="p-6 space-y-4">
+                  {/* Title */}
+                  <div>
+                    <h3 className="font-semibold text-[#1E293B] line-clamp-2 group-hover:text-[#1B8A44] transition-colors mb-1">
+                      {liveClass.title}
+                    </h3>
+                    <p className="text-xs text-[#64748B] flex items-center gap-1">
+                      <BookOpen className="size-3" />
+                      {liveClass.course_title}
+                    </p>
+                  </div>
+
+                  {/* Instructor */}
+                  {liveClass.instructor_name && (
+                    <div className="flex items-center gap-2 text-sm text-[#64748B] bg-[#F8FAFC] px-3 py-2 rounded-lg">
+                      <User className="size-4 flex-shrink-0" />
+                      <span className="truncate">{liveClass.instructor_name}</span>
+                    </div>
+                  )}
+
+                  {/* Description */}
+                  {liveClass.description && (
+                    <p className="text-sm text-[#64748B] line-clamp-2">
+                      {liveClass.description}
+                    </p>
+                  )}
+
+                  {/* Date & Time */}
+                  <div className="space-y-2 pt-2 border-t border-[#E2E8F0]">
+                    <div className="flex items-center gap-2 text-sm text-[#64748B]">
+                      <Calendar className="size-4 flex-shrink-0" />
+                      <span>{formatDate(liveClass.scheduled_at)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-[#64748B]">
+                      <Clock className="size-4 flex-shrink-0" />
+                      <span>{formatTime(liveClass.scheduled_at)} • {liveClass.duration_minutes} min</span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-2">
+                    <a
+                      href={liveClass.meet_link}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#1B8A44] text-white rounded-lg hover:bg-[#15803d] transition-colors text-sm font-medium"
+                    >
+                      <ExternalLink className="size-4" />
+                      Join
+                    </a>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(liveClass.id);
+                      }}
+                      className="px-4 py-2 border border-[#E2E8F0] text-[#64748B] rounded-lg hover:bg-[#F8FAFC] hover:text-red-600 hover:border-red-200 transition-colors"
+                    >
+                      <Trash2 className="size-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             );
           })}
         </div>

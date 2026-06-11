@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { Calendar, Clock, Loader2, Trash2, ExternalLink, AlertCircle, Search, Video, BookOpen, User, Filter, X } from 'lucide-react';
+import { Calendar, Clock, Loader2, Trash2, ExternalLink, AlertCircle, Video, BookOpen, User, Filter, X } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { liveClassService } from '@/services/liveClassService';
 import { adminService } from '@/services/adminService';
@@ -14,7 +14,6 @@ function AdminLiveClassManagementContent() {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'upcoming' | 'live' | 'completed'>('upcoming');
-  const [searchTerm, setSearchTerm] = useState('');
   const [error, setError] = useState('');
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
   
@@ -33,7 +32,6 @@ function AdminLiveClassManagementContent() {
       if (selectedCourse) filters.course_id = selectedCourse;
       if (dateFrom) filters.date_from = dateFrom;
       if (dateTo) filters.date_to = dateTo;
-      if (searchTerm) filters.search = searchTerm;
       
       const data = await liveClassService.getLiveClasses(filters);
       setClasses(data.liveClasses || []);
@@ -85,16 +83,11 @@ function AdminLiveClassManagementContent() {
     }
   };
 
-  const handleSearch = () => {
-    fetchLiveClasses();
-  };
-
   const clearFilters = () => {
     setSelectedInstructor('');
     setSelectedCourse('');
     setDateFrom('');
     setDateTo('');
-    setSearchTerm('');
   };
 
   const hasActiveFilters = selectedInstructor || selectedCourse || dateFrom || dateTo;
@@ -236,21 +229,10 @@ function AdminLiveClassManagementContent() {
         </div>
       )}
 
-      {/* Search and Advanced Filters */}
+      {/* Advanced Filters */}
       <div className="space-y-4">
-        {/* Search Bar with Filter Toggle */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-[#64748B]" />
-            <input
-              type="text"
-              placeholder="Search by class title, course, or instructor..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              className="w-full pl-10 pr-4 py-2.5 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent text-sm"
-            />
-          </div>
+        {/* Filter Toggle */}
+        <div className="flex justify-end">
           <Button
             variant="outline"
             onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
@@ -264,11 +246,6 @@ function AdminLiveClassManagementContent() {
               </span>
             )}
           </Button>
-          {searchTerm && (
-            <Button onClick={handleSearch}>
-              Search
-            </Button>
-          )}
         </div>
 
         {/* Advanced Filters Panel */}

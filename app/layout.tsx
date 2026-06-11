@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "PlayFit Admin",
-  description: "PlayFit Admin - Learning Management System Administration Portal",
+  description: "PlayFit Admin - Interactive Learning Platform Administration Portal",
   icons: {
     icon: "/images/navbarlogo.png",
     shortcut: "/images/navbarlogo.png",

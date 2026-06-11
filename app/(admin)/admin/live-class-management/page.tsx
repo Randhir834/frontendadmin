@@ -160,7 +160,7 @@ function AdminLiveClassManagementContent() {
     return (
       <div className="p-4 md:p-8 max-w-[1400px] mx-auto">
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="size-12 animate-spin text-[#1B8A44] mb-4" />
+          <Loader2 className="size-12 animate-spin text-[#1E88E5] mb-4" />
           <p className="text-[#64748B] text-sm">Loading live classes...</p>
         </div>
       </div>
@@ -248,7 +248,7 @@ function AdminLiveClassManagementContent() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-              className="w-full pl-10 pr-4 py-2.5 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] focus:border-transparent text-sm"
+              className="w-full pl-10 pr-4 py-2.5 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent text-sm"
             />
           </div>
           <Button
@@ -259,7 +259,7 @@ function AdminLiveClassManagementContent() {
             <Filter className="size-4" />
             Filters
             {hasActiveFilters && (
-              <span className="ml-1 px-2 py-0.5 bg-[#1B8A44] text-white text-xs rounded-full">
+              <span className="ml-1 px-2 py-0.5 bg-[#1E88E5] text-white text-xs rounded-full">
                 {[selectedInstructor, selectedCourse, dateFrom, dateTo].filter(Boolean).length}
               </span>
             )}
@@ -296,7 +296,7 @@ function AdminLiveClassManagementContent() {
                 <select
                   value={selectedInstructor}
                   onChange={(e) => setSelectedInstructor(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] text-sm"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] text-sm"
                 >
                   <option value="">All Instructors</option>
                   {instructors.map((instructor) => (
@@ -315,7 +315,7 @@ function AdminLiveClassManagementContent() {
                 <select
                   value={selectedCourse}
                   onChange={(e) => setSelectedCourse(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] text-sm"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] text-sm"
                 >
                   <option value="">All Courses</option>
                   {courses.map((course) => (
@@ -335,7 +335,7 @@ function AdminLiveClassManagementContent() {
                   type="date"
                   value={dateFrom}
                   onChange={(e) => setDateFrom(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] text-sm"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] text-sm"
                 />
               </div>
 
@@ -348,7 +348,7 @@ function AdminLiveClassManagementContent() {
                   type="date"
                   value={dateTo}
                   onChange={(e) => setDateTo(e.target.value)}
-                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] text-sm"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] text-sm"
                 />
               </div>
             </div>
@@ -369,7 +369,7 @@ function AdminLiveClassManagementContent() {
             onClick={() => setFilter(tab.key)}
             className={`px-4 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
               filter === tab.key
-                ? 'border-[#1B8A44] text-[#1B8A44]'
+                ? 'border-[#1E88E5] text-[#1E88E5]'
                 : 'border-transparent text-[#64748B] hover:text-[#1E293B]'
             }`}
           >
@@ -411,7 +411,7 @@ function AdminLiveClassManagementContent() {
                 className="bg-white rounded-lg border border-[#E2E8F0] overflow-hidden hover:shadow-lg transition-all group"
               >
                 {/* Thumbnail */}
-                <div className="relative h-40 bg-gradient-to-br from-[#1B8A44] to-[#15803d] overflow-hidden">
+                <div className="relative h-40 bg-gradient-to-br from-[#1E88E5] to-[#1565C0] overflow-hidden">
                   {liveClass.thumbnail_url ? (
                     <img 
                       src={liveClass.thumbnail_url} 
@@ -437,7 +437,7 @@ function AdminLiveClassManagementContent() {
                 <div className="p-6 space-y-4">
                   {/* Title */}
                   <div>
-                    <h3 className="font-semibold text-[#1E293B] line-clamp-2 group-hover:text-[#1B8A44] transition-colors mb-1">
+                    <h3 className="font-semibold text-[#1E293B] line-clamp-2 group-hover:text-[#1E88E5] transition-colors mb-1">
                       {liveClass.title}
                     </h3>
                     <p className="text-xs text-[#64748B] flex items-center gap-1">
@@ -479,7 +479,7 @@ function AdminLiveClassManagementContent() {
                       href={liveClass.meet_link}
                       target="_blank"
                       rel="noreferrer"
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#1B8A44] text-white rounded-lg hover:bg-[#15803d] transition-colors text-sm font-medium"
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-[#1E88E5] text-white rounded-lg hover:bg-[#1565C0] transition-colors text-sm font-medium"
                     >
                       <ExternalLink className="size-4" />
                       Join
@@ -509,7 +509,7 @@ export default function AdminLiveClassManagementPage() {
     <Suspense fallback={
       <div className="p-4 md:p-8 max-w-[1400px] mx-auto">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-8 animate-spin text-[#1B8A44]" />
+          <Loader2 className="size-8 animate-spin text-[#1E88E5]" />
         </div>
       </div>
     }>

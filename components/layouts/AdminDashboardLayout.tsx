@@ -130,8 +130,8 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
                   onClick={() => handleNavClick(item.href)}
                   className={`w-full flex items-center gap-2 sm:gap-3 px-2 sm:px-3 lg:px-3 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm transition-colors ${
                     isActive
-                      ? 'bg-[#F0FDF4] text-[#1B8A44] font-medium'
-                      : 'text-[#475569] hover:bg-[#F1F5F9] hover:text-[#1B8A44]'
+                      ? 'bg-[#EFF6FF] text-[#1E88E5] font-medium'
+                      : 'text-[#475569] hover:bg-[#F1F5F9] hover:text-[#1E88E5]'
                   }`}
                 >
                   <item.icon size={16} className="shrink-0 sm:size-[18px]" />
@@ -164,11 +164,11 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-              <button className="relative p-2 text-[#64748B] hover:text-[#1B8A44] transition-colors hidden sm:block">
+              <button className="relative p-2 text-[#64748B] hover:text-[#1E88E5] transition-colors hidden sm:block">
                 <Bell size={20} />
                 <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#DC2626] text-white text-xs rounded-full flex items-center justify-center font-medium">3</span>
               </button>
-              <button className="relative p-2 text-[#64748B] hover:text-[#1B8A44] transition-colors hidden sm:block">
+              <button className="relative p-2 text-[#64748B] hover:text-[#1E88E5] transition-colors hidden sm:block">
                 <Mail size={20} />
                 <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#DC2626] text-white text-xs rounded-full flex items-center justify-center font-medium">2</span>
               </button>

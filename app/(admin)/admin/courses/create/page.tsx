@@ -342,7 +342,7 @@ export default function AdminCreateCoursePage() {
                 onChange={handleChange}
                 rows={4}
                 placeholder="Describe what this course is about..."
-                className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] focus:border-transparent resize-none"
+                className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent resize-none"
               />
             </div>
 
@@ -360,7 +360,7 @@ export default function AdminCreateCoursePage() {
               )}
 
               {!courseImagePreview ? (
-                <div className="border-2 border-dashed border-[#E2E8F0] rounded-lg p-6 text-center hover:border-[#1B8A44] transition-colors">
+                <div className="border-2 border-dashed border-[#E2E8F0] rounded-lg p-6 text-center hover:border-[#1E88E5] transition-colors">
                   <input
                     type="file"
                     id="course-image"
@@ -446,7 +446,7 @@ export default function AdminCreateCoursePage() {
                   name="level"
                   value={form.level}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent"
                 >
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
@@ -490,7 +490,7 @@ export default function AdminCreateCoursePage() {
                   name="duration_unit"
                   value={form.duration_unit}
                   onChange={handleChange}
-                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1B8A44] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent"
                 >
                   <option value="days">Days</option>
                   <option value="weeks">Weeks</option>
@@ -594,8 +594,8 @@ export default function AdminCreateCoursePage() {
                     key={instructor.id}
                     className={`p-3 border rounded-lg cursor-pointer transition-colors ${
                       selectedInstructors.includes(instructor.id)
-                        ? 'border-[#1B8A44] bg-[#1B8A44]/5'
-                        : 'border-[#E2E8F0] hover:border-[#1B8A44]/50'
+                        ? 'border-[#1E88E5] bg-[#1E88E5]/5'
+                        : 'border-[#E2E8F0] hover:border-[#1E88E5]/50'
                     }`}
                     onClick={() => toggleInstructor(instructor.id)}
                   >
@@ -605,7 +605,7 @@ export default function AdminCreateCoursePage() {
                         <p className="text-sm text-[#64748B]">{instructor.email}</p>
                       </div>
                       {selectedInstructors.includes(instructor.id) && (
-                        <Check className="size-5 text-[#1B8A44]" />
+                        <Check className="size-5 text-[#1E88E5]" />
                       )}
                     </div>
                   </div>
@@ -629,7 +629,7 @@ export default function AdminCreateCoursePage() {
           </CardHeader>
           <CardContent className="space-y-4">
             {/* File Upload Area */}
-            <div className="border-2 border-dashed border-[#E2E8F0] rounded-lg p-6 text-center hover:border-[#1B8A44] transition-colors">
+            <div className="border-2 border-dashed border-[#E2E8F0] rounded-lg p-6 text-center hover:border-[#1E88E5] transition-colors">
               <input
                 type="file"
                 id="course-materials"

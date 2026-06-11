@@ -26,7 +26,7 @@ export default function CourseCard({
   linkPrefix = ''
 }: CourseCardProps) {
   const statusColors = {
-    published: 'bg-[#DCFCE7] text-[#1B8A44]',
+    published: 'bg-[#DCFCE7] text-[#1E88E5]',
     archived: 'bg-[#F1F5F9] text-[#64748B]',
   };
 
@@ -60,7 +60,7 @@ export default function CourseCard({
 
   return (
     <Link href={getViewLink()}>
-      <Card className="group hover:shadow-lg transition-all duration-200 border-[#E2E8F0] hover:border-[#1B8A44]/20 h-full flex flex-col cursor-pointer">
+      <Card className="group hover:shadow-lg transition-all duration-200 border-[#E2E8F0] hover:border-[#1E88E5]/20 h-full flex flex-col cursor-pointer">
         <div className="relative">
           {course.thumbnail_url ? (
             <img
@@ -69,8 +69,8 @@ export default function CourseCard({
               className="w-full h-48 object-cover rounded-t-lg"
             />
           ) : (
-            <div className="w-full h-48 bg-gradient-to-br from-[#1B8A44]/10 to-[#1B8A44]/20 rounded-t-lg flex items-center justify-center">
-              <BookOpen className="size-12 text-[#1B8A44]/60" />
+            <div className="w-full h-48 bg-gradient-to-br from-[#1E88E5]/10 to-[#1E88E5]/20 rounded-t-lg flex items-center justify-center">
+              <BookOpen className="size-12 text-[#1E88E5]/60" />
             </div>
           )}
 
@@ -80,7 +80,7 @@ export default function CourseCard({
             <div className="flex items-center gap-2 text-xs">
               <div className="flex-1 bg-[#E2E8F0] rounded-full h-2">
                 <div 
-                  className="bg-[#1B8A44] h-2 rounded-full transition-all duration-300"
+                  className="bg-[#1E88E5] h-2 rounded-full transition-all duration-300"
                   style={{ width: `${course.progress}%` }}
                 />
               </div>
@@ -95,7 +95,7 @@ export default function CourseCard({
           {/* Title and Level */}
           <div className="space-y-1">
             <div className="flex items-start justify-between gap-2">
-              <h3 className="font-semibold text-[#1E293B] line-clamp-2 group-hover:text-[#1B8A44] transition-colors">
+              <h3 className="font-semibold text-[#1E293B] line-clamp-2 group-hover:text-[#1E88E5] transition-colors">
                 {course.title}
               </h3>
               <span className={`px-2 py-1 text-xs font-medium rounded-full whitespace-nowrap ${levelColors[course.level]}`}>
@@ -119,7 +119,7 @@ export default function CourseCard({
 
         {/* Enrollment Status for Students */}
         {userRole === 'student' && course.is_enrolled && (
-          <div className="flex items-center gap-2 text-sm text-[#1B8A44] bg-[#DCFCE7] px-3 py-2 rounded-lg">
+          <div className="flex items-center gap-2 text-sm text-[#1E88E5] bg-[#DCFCE7] px-3 py-2 rounded-lg">
             <CheckCircle2 className="size-4" />
             <span className="font-medium">Enrolled</span>
           </div>

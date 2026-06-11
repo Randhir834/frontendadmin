@@ -64,7 +64,7 @@ export default function AdminAttendancePage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'present': return 'text-[#1B8A44] bg-[#DCFCE7]';
+      case 'present': return 'text-[#1E88E5] bg-[#DCFCE7]';
       case 'absent': return 'text-[#DC2626] bg-[#FEE2E2]';
       case 'late': return 'text-[#D97706] bg-[#FEF3C7]';
       default: return 'text-[#64748B] bg-[#F1F5F9]';
@@ -118,7 +118,7 @@ export default function AdminAttendancePage() {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-[#1B8A44]">{stats.presentCount}</div>
+              <div className="text-2xl font-bold text-[#1E88E5]">{stats.presentCount}</div>
               <div className="text-sm text-[#64748B]">Present</div>
             </div>
           </CardContent>
@@ -240,7 +240,7 @@ export default function AdminAttendancePage() {
         <CardContent>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="size-6 animate-spin text-[#1B8A44]" />
+              <Loader2 className="size-6 animate-spin text-[#1E88E5]" />
             </div>
           ) : attendanceData.length === 0 ? (
             <div className="text-center py-8">
@@ -304,8 +304,8 @@ export default function AdminAttendancePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="p-4 border border-[#E2E8F0] rounded-lg">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-[#1B8A44]/10 rounded-lg">
-                  <BarChart3 className="size-5 text-[#1B8A44]" />
+                <div className="p-2 bg-[#1E88E5]/10 rounded-lg">
+                  <BarChart3 className="size-5 text-[#1E88E5]" />
                 </div>
                 <div>
                   <h4 className="font-medium text-[#1E293B]">Generate Reports</h4>

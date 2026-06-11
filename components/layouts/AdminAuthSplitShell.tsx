@@ -12,7 +12,7 @@ export default function AdminAuthSplitShell({ leftTitle, leftSubtitle, centered 
   return (
     <div className="h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Mobile-only branding */}
-      <div className="md:hidden bg-[#1B8A44] px-6 py-8 text-center">
+      <div className="md:hidden bg-[#1E88E5] px-6 py-8 text-center">
         <img
           src="/images/navbarlogo.png"
           alt="PlayFit"
@@ -39,7 +39,7 @@ export default function AdminAuthSplitShell({ leftTitle, leftSubtitle, centered 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5 sm:gap-3 mb-6 sm:mb-8 max-w-lg">
             <div className="flex items-center gap-2 sm:gap-2.5 bg-white/90 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 sm:py-2.5 shadow-lg w-full min-h-[44px] sm:min-h-[52px] h-[44px] sm:h-[52px] box-border">
               <div className="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-primary-100 flex items-center justify-center">
-                <svg width="12" height="12" className="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="#1B8A44" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <svg width="12" height="12" className="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="18" height="18" rx="2" />
                   <path d="M3 9h18" />
                 </svg>

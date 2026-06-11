@@ -145,7 +145,7 @@ function CoursesContent() {
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
-              <div className="text-2xl font-bold text-[#1B8A44]">{stats.published}</div>
+              <div className="text-2xl font-bold text-[#1E88E5]">{stats.published}</div>
               <div className="text-sm text-[#64748B]">Published</div>
             </div>
           </CardContent>
@@ -163,7 +163,7 @@ function CoursesContent() {
       {/* Course Grid */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-8 animate-spin text-[#1B8A44]" />
+          <Loader2 className="size-8 animate-spin text-[#1E88E5]" />
         </div>
       ) : courses.length === 0 ? (
         <Card>
@@ -204,7 +204,7 @@ export default function AdminCoursesPage() {
     <Suspense fallback={
       <div className="p-4 md:p-8 max-w-[1400px] mx-auto">
         <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-8 animate-spin text-[#1B8A44]" />
+          <Loader2 className="size-8 animate-spin text-[#1E88E5]" />
         </div>
       </div>
     }>

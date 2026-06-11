@@ -11,7 +11,7 @@ import {
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { courseService } from '@/services/courseService';
-import type { Course, EnrolledStudent, CourseMaterial, EnrollmentStats } from '@/types';
+import type { Course, EnrolledStudent, EnrollmentStats } from '@/types';
 
 export default function AdminCourseViewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
@@ -21,11 +21,9 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
   const [course, setCourse] = useState<Course | null>(null);
   const [enrollmentStats, setEnrollmentStats] = useState<EnrollmentStats | null>(null);
   const [students, setStudents] = useState<EnrolledStudent[]>([]);
-  const [materials, setMaterials] = useState<CourseMaterial[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
   const [studentsLoading, setStudentsLoading] = useState(false);
-  const [materialsLoading, setMaterialsLoading] = useState(false);
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -75,23 +73,6 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
     fetchStudents();
   }, [courseId]);
 
-  // Fetch course materials
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      try {
-        setMaterialsLoading(true);
-        const res = await courseService.getCourseMaterials(courseId);
-        setMaterials(res.materials || []);
-      } catch (error) {
-        console.error('Failed to fetch materials:', error);
-        setMaterials([]);
-      } finally {
-        setMaterialsLoading(false);
-      }
-    };
-    fetchMaterials();
-  }, [courseId]);
-
   const instructorNames = useMemo(() => {
     if (!course?.instructors?.length) return '';
     return course.instructors.map((i) => i.name).join(', ');
@@ -110,23 +91,6 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
     beginner: 'Beginner',
     intermediate: 'Intermediate',
     advanced: 'Advanced',
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-  };
-
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType?.includes('pdf')) return '📄';
-    if (mimeType?.includes('word') || mimeType?.includes('document')) return '📝';
-    if (mimeType?.includes('image')) return '🖼️';
-    if (mimeType?.includes('video')) return '🎥';
-    if (mimeType?.includes('audio')) return '🎵';
-    return '📎';
   };
 
   if (loading) {
@@ -179,11 +143,6 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href={`/admin/courses/${course.id}/materials`}>
-            <Button variant="outline" className="gap-2">
-              <FileText size={16} /> Materials
-            </Button>
-          </Link>
           <Link href={`/admin/courses/${course.id}/edit`}>
             <Button className="gap-2">
               <Edit size={16} /> Edit Course
@@ -364,61 +323,6 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
                       </div>
                     </div>
                   ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Course Materials */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Course Materials ({materials.length})</CardTitle>
-                <Link href={`/admin/courses/${course.id}/materials`}>
-                  <Button variant="outline" size="sm" className="gap-2">
-                    <FileText size={14} />
-                    Manage Materials
-                  </Button>
-                </Link>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {materialsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="size-6 animate-spin text-[#1B8A44]" />
-                </div>
-              ) : materials.length === 0 ? (
-                <div className="text-center py-12">
-                  <FileText className="size-16 text-[#CBD5E1] mx-auto mb-4" />
-                  <p className="text-sm text-[#64748B] font-medium mb-4">No materials uploaded yet</p>
-                  <Link href={`/admin/courses/${course.id}/materials`}>
-                    <Button variant="outline" size="sm">Upload Materials</Button>
-                  </Link>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {materials.slice(0, 5).map((material) => (
-                    <div key={material.id} className="flex items-center justify-between p-4 border border-[#E2E8F0] rounded-lg hover:border-[#1B8A44] hover:shadow-sm transition-all">
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className="text-3xl">{getFileIcon(material.mime_type)}</div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-[#1E293B] truncate">{material.title}</h4>
-                          <div className="flex items-center gap-2 mt-1 text-xs text-[#64748B]">
-                            <span>{formatFileSize(material.file_size)}</span>
-                            <span className="text-[#CBD5E1]">•</span>
-                            <span>{new Date(material.created_at).toLocaleDateString()}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  {materials.length > 5 && (
-                    <Link href={`/admin/courses/${course.id}/materials`} className="block text-center mt-4">
-                      <Button variant="outline" size="sm" className="w-full">
-                        View All {materials.length} Materials
-                      </Button>
-                    </Link>
-                  )}
                 </div>
               )}
             </CardContent>

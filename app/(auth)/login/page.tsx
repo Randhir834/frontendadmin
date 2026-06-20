@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/hooks/useAuth';
@@ -17,10 +17,11 @@ export default function LoginPage() {
   const router = useRouter();
 
   // Redirect if already logged in
-  if (isAuthenticated) {
-    router.push('/dashboard');
-    return null;
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
 
   // Detect if the input is email or phone
   const isEmail = identifier.includes('@');

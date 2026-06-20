@@ -46,14 +46,23 @@ function ResetPasswordForm() {
 
   return (
     <>
-      <h2 className="text-2xl font-bold text-text-primary text-center mb-2">Set a new password</h2>
-      <p className="text-center text-sm text-text-muted mb-8">Admin account</p>
+      <h2 className="text-2xl font-bold text-text-primary text-center mb-2">Set a New Password</h2>
+      <p className="text-center text-sm text-text-muted mb-8">Choose a strong password for your admin account</p>
 
       {done ? (
-        <div className="text-center space-y-4">
-          <p className="text-sm text-text-secondary">Password updated. You can sign in now.</p>
-          <Link href="/login" className="text-primary-500 font-semibold">
-            Back to sign in
+        <div className="text-center space-y-6">
+          <div className="mx-auto w-14 h-14 rounded-full bg-primary-100 flex items-center justify-center">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1E88E5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm text-text-primary font-medium">Password Reset Successful!</p>
+            <p className="text-sm text-text-secondary">Your password has been updated. You can now sign in with your new password.</p>
+          </div>
+          <Link href="/login" className="inline-flex w-full py-3 rounded-xl bg-primary-500 text-white font-medium text-sm hover:bg-primary-600 active:bg-primary-700 transition-colors items-center justify-center gap-2 shadow-sm">
+            Continue to Sign In
           </Link>
         </div>
       ) : (

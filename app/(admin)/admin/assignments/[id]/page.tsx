@@ -52,7 +52,7 @@ interface Submission {
 export default function AdminAssignmentDetailsPage() {
   const router = useRouter();
   const params = useParams();
-  const assignmentId = params.id as string;
+  const assignmentId = (params?.id as string) || '';
 
   const [assignment, setAssignment] = useState<AssignmentDetails | null>(null);
   const [statistics, setStatistics] = useState<AssignmentStatistics | null>(null);

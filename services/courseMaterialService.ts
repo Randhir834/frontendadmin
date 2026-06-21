@@ -1,10 +1,10 @@
 import api from './api';
 
-export interface CourseMaterial {
+interface CourseMaterial {
   id: number;
   title: string;
   description: string;
-  file_type: 'pdf' | 'ppt' | 'image' | 'document';
+  file_type: string;
   file_name: string;
   file_size: number;
   mime_type: string;
@@ -12,47 +12,26 @@ export interface CourseMaterial {
   created_at: string;
 }
 
-export interface MaterialUploadData {
-  title: string;
-  description?: string;
-}
-
-export interface SecurityViolationReport {
-  materialId: number;
-  type: 'screenshot' | 'download';
-}
-
-export interface AccessLog {
+interface AccessLog {
   id: number;
-  material_id: number;
-  user_id: number;
   user_name: string;
   user_email: string;
   access_type: string;
   ip_address: string;
   user_agent: string;
   access_granted: boolean;
-  blocked_reason?: string;
+  blocked_reason: string | null;
   accessed_at: string;
-  material_title: string;
 }
 
 class CourseMaterialService {
   /**
-   * Get all materials for a course
-   */
-  async getCourseMaterials(courseId: number): Promise<{ materials: CourseMaterial[] }> {
-    const response = await api.get(`/courses/${courseId}/materials`);
-    return response.data;
-  }
-
-  /**
-   * Upload a new course material
+   * Upload a course material
    */
   async uploadMaterial(
-    courseId: number, 
-    file: File, 
-    data: MaterialUploadData
+    courseId: number,
+    file: File,
+    data: { title: string; description?: string }
   ): Promise<{ material: CourseMaterial }> {
     const formData = new FormData();
     formData.append('file', file);
@@ -66,6 +45,39 @@ class CourseMaterialService {
         'Content-Type': 'multipart/form-data',
       },
     });
+    return response.data;
+  }
+
+  /**
+   * Get all materials for a course
+   */
+  async getCourseMaterials(courseId: number): Promise<{ materials: CourseMaterial[] }> {
+    const response = await api.get(`/courses/${courseId}/materials`);
+    return response.data;
+  }
+
+  /**
+   * Delete a course material
+   */
+  async deleteMaterial(materialId: number): Promise<void> {
+    await api.delete(`/materials/${materialId}`);
+  }
+
+  /**
+   * Get access logs for a material
+   */
+  async getMaterialAccessLogs(materialId: number, limit = 100): Promise<{ logs: AccessLog[] }> {
+    const response = await api.get(`/materials/${materialId}/logs`, {
+      params: { limit },
+    });
+    return response.data;
+  }
+
+  /**
+   * Get a specific material by ID
+   */
+  async getMaterialById(materialId: number): Promise<{ material: CourseMaterial }> {
+    const response = await api.get(`/materials/${materialId}`);
     return response.data;
   }
 
@@ -90,22 +102,6 @@ class CourseMaterialService {
   }
 
   /**
-   * Delete a course material
-   */
-  async deleteMaterial(materialId: number): Promise<{ material: CourseMaterial }> {
-    const response = await api.delete(`/materials/${materialId}`);
-    return response.data;
-  }
-
-  /**
-   * Get access logs for a material (admin only)
-   */
-  async getAccessLogs(materialId: number, limit = 100): Promise<{ logs: AccessLog[] }> {
-    const response = await api.get(`/materials/${materialId}/logs?limit=${limit}`);
-    return response.data;
-  }
-
-  /**
    * Report a screenshot attempt
    */
   async reportScreenshotAttempt(materialId: number): Promise<void> {
@@ -120,48 +116,16 @@ class CourseMaterialService {
   }
 
   /**
-   * Validate file for upload
+   * Get file icon based on file type
    */
-  validateFile(file: File): { valid: boolean; error?: string } {
-    const allowedTypes = [
-      'application/pdf',
-      'application/vnd.ms-powerpoint',
-      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
-      'image/jpeg',
-      'image/png',
-      'image/webp',
-      'image/gif',
-      'application/msword',
-      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-      'text/plain'
-    ];
-
-    if (!allowedTypes.includes(file.type)) {
-      return {
-        valid: false,
-        error: 'File type not supported. Please upload PDF, PPT, Word documents, or images.'
-      };
-    }
-
-    const maxSize = 100 * 1024 * 1024; // 100MB
-    if (file.size > maxSize) {
-      return {
-        valid: false,
-        error: 'File size must be less than 100MB'
-      };
-    }
-
-    return { valid: true };
-  }
-
-  /**
-   * Get file type from MIME type
-   */
-  getFileType(mimeType: string): 'pdf' | 'ppt' | 'image' | 'document' {
-    if (mimeType === 'application/pdf') return 'pdf';
-    if (mimeType.includes('presentation') || mimeType.includes('powerpoint')) return 'ppt';
-    if (mimeType.startsWith('image/')) return 'image';
-    return 'document';
+  getFileIcon(fileType: string): string {
+    const iconMap: Record<string, string> = {
+      pdf: '📄',
+      ppt: '📊',
+      image: '🖼️',
+      document: '📝',
+    };
+    return iconMap[fileType] || '📎';
   }
 
   /**
@@ -184,8 +148,53 @@ class CourseMaterialService {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
+  }
+
+  /**
+   * Get allowed file types
+   */
+  getAllowedFileTypes(): string {
+    return '.pdf,.doc,.docx,.ppt,.pptx,.txt,.jpg,.jpeg,.png,.gif,.webp,.mp4,.webm';
+  }
+
+  /**
+   * Validate file
+   */
+  validateFile(file: File): { valid: boolean; error?: string } {
+    const maxSize = 50 * 1024 * 1024; // 50MB
+    
+    if (file.size > maxSize) {
+      return {
+        valid: false,
+        error: 'File size must be less than 50MB',
+      };
+    }
+
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'application/vnd.ms-powerpoint',
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      'text/plain',
+      'image/jpeg',
+      'image/png',
+      'image/gif',
+      'image/webp',
+      'video/mp4',
+      'video/webm',
+    ];
+
+    if (!allowedTypes.includes(file.type)) {
+      return {
+        valid: false,
+        error: 'File type not allowed. Please upload PDF, Word, PowerPoint, text, image, or video files.',
+      };
+    }
+
+    return { valid: true };
   }
 }
 

@@ -22,8 +22,6 @@ const menuItems = [
   { label: 'Quizzes/Tests', href: '/admin/quizzes', icon: BookOpen },
   { label: 'Attendance', href: '/admin/attendance', icon: FileText },
   { label: 'Live Classes', href: '/admin/live-class-management', icon: Video },
-  { label: 'Notifications', href: '/admin/notifications', icon: Bell },
-  { label: 'Reports', href: '/admin/reports', icon: BarChart3 },
   { label: 'Profile', href: '/admin/profile-settings', icon: UserIcon },
 ];
 

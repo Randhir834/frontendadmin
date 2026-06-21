@@ -143,6 +143,11 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
         </div>
 
         <div className="flex items-center gap-3">
+          <Link href={`/admin/courses/${course.id}/materials`}>
+            <Button variant="outline" className="gap-2">
+              <FileText size={16} /> Materials
+            </Button>
+          </Link>
           <Link href={`/admin/courses/${course.id}/edit`}>
             <Button className="gap-2">
               <Edit size={16} /> Edit Course

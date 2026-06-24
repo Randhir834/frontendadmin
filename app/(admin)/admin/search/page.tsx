@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, BookOpen, FileText, ClipboardList, HelpCircle, FolderOpen, Users, Loader2 } from 'lucide-react';
+import { Search, BookOpen, FileText, FolderOpen, Users, Loader2 } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { searchService } from '@/services/searchService';
 import type { SearchResults } from '@/services/searchService';
@@ -152,58 +152,6 @@ function SearchResultsContent() {
                             <p className="text-sm text-muted mb-2">{lesson.description}</p>
                             <p className="text-xs text-muted">
                               Course: {lesson.course_title} • Section: {lesson.section_title}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Assignments */}
-              {results.assignments && results.assignments.length > 0 && (
-                <section>
-                  <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <ClipboardList className="h-5 w-5 text-primary" />
-                    Assignments ({results.assignments.length})
-                  </h2>
-                  <div className="space-y-3">
-                    {results.assignments.map((assignment: any) => (
-                      <Link key={assignment.id} href={`/admin/assignments`}>
-                        <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                          <CardContent className="p-4">
-                            <h3 className="font-semibold text-foreground mb-1">{assignment.title}</h3>
-                            <p className="text-sm text-muted mb-2">{assignment.description}</p>
-                            <p className="text-xs text-muted">
-                              Course: {assignment.course_title}
-                              {assignment.due_date && ` • Due: ${new Date(assignment.due_date).toLocaleDateString()}`}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Quizzes */}
-              {results.quizzes && results.quizzes.length > 0 && (
-                <section>
-                  <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <HelpCircle className="h-5 w-5 text-primary" />
-                    Quizzes ({results.quizzes.length})
-                  </h2>
-                  <div className="space-y-3">
-                    {results.quizzes.map((quiz: any) => (
-                      <Link key={quiz.id} href={`/admin/courses/${quiz.course_id}`}>
-                        <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                          <CardContent className="p-4">
-                            <h3 className="font-semibold text-foreground mb-1">{quiz.title}</h3>
-                            <p className="text-sm text-muted mb-2">{quiz.description}</p>
-                            <p className="text-xs text-muted">
-                              Course: {quiz.course_title}
-                              {quiz.time_limit && ` • Time: ${quiz.time_limit} min`}
                             </p>
                           </CardContent>
                         </Card>

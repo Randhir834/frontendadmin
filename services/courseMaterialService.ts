@@ -214,6 +214,3 @@ class CourseMaterialService {
 }
 
 export const courseMaterialService = new CourseMaterialService();
-
-// Explicitly export types for better compatibility
-export type { CourseMaterial, AccessLog };

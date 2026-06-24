@@ -78,7 +78,7 @@ interface StudentData {
 export default function StudentDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const studentId = params.id as string;
+  const studentId = params?.id as string;
 
   const [data, setData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);

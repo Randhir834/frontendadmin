@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { Search, X, Loader2, BookOpen, FileText, Video, Users, Folder, GraduationCap, Shapes, UserCheck } from 'lucide-react';
+import { Search, X, Loader2, BookOpen, FileText, Users, Folder, GraduationCap, Shapes, UserCheck } from 'lucide-react';
 import { searchService, SearchResponse } from '@/services/searchService';
 
 interface GlobalSearchProps {
@@ -16,8 +16,6 @@ const getSearchContext = (pathname: string) => {
   const courseMatch = pathname.match(/\/courses\/(\d+)/);
   const studentMatch = pathname.match(/\/students/);
   const instructorMatch = pathname.match(/\/instructors\/(\d+)/);
-  const assignmentMatch = pathname.match(/\/assignments/);
-  const quizMatch = pathname.match(/\/quizzes/);
   const categoryMatch = pathname.match(/\/categories/);
   const enrollmentMatch = pathname.match(/\/enrollments/);
   
@@ -27,10 +25,6 @@ const getSearchContext = (pathname: string) => {
     return { type: 'instructor', id: parseInt(instructorMatch[1]) };
   } else if (studentMatch) {
     return { type: 'student', id: null };
-  } else if (assignmentMatch) {
-    return { type: 'assignment', id: null };
-  } else if (quizMatch) {
-    return { type: 'quiz', id: null };
   } else if (categoryMatch) {
     return { type: 'category', id: null };
   } else if (enrollmentMatch) {
@@ -119,15 +113,6 @@ export default function GlobalSearch({ initialQuery = '', className = '' }: Glob
       case 'section':
         router.push(`/admin/courses/${results?.results.sections.find(s => s.id === id)?.course_id}/sections`);
         break;
-      case 'assignment':
-        router.push(`/admin/assignments`);
-        break;
-      case 'quiz':
-        router.push(`/admin/quizzes`);
-        break;
-      case 'live_class':
-        router.push(`/admin/live-class-management`);
-        break;
       case 'user':
         const user = results?.results.users.find(u => u.id === id);
         if (user?.role === 'student') {
@@ -152,15 +137,9 @@ export default function GlobalSearch({ initialQuery = '', className = '' }: Glob
       case 'course':
         return <BookOpen className="text-[#1E88E5]" size={18} />;
       case 'lesson':
-        return <Video className="text-[#1E88E5]" size={18} />;
+        return <FileText className="text-[#1E88E5]" size={18} />;
       case 'section':
         return <Folder className="text-[#8B5CF6]" size={18} />;
-      case 'assignment':
-        return <FileText className="text-[#FFA726]" size={18} />;
-      case 'quiz':
-        return <FileText className="text-[#EF4444]" size={18} />;
-      case 'live_class':
-        return <Video className="text-[#EC4899]" size={18} />;
       case 'user':
         return <Users className="text-[#6366F1]" size={18} />;
       case 'category':
@@ -177,9 +156,6 @@ export default function GlobalSearch({ initialQuery = '', className = '' }: Glob
       course: 'Course',
       lesson: 'Lesson',
       section: 'Section',
-      assignment: 'Assignment',
-      quiz: 'Quiz',
-      live_class: 'Live Class',
       user: 'User',
       category: 'Category',
       enrollment: 'Enrollment',
@@ -271,10 +247,6 @@ export default function GlobalSearch({ initialQuery = '', className = '' }: Glob
       return 'Search students...';
     } else if (context.type === 'instructor') {
       return 'Search instructors...';
-    } else if (context.type === 'assignment') {
-      return 'Search assignments...';
-    } else if (context.type === 'quiz') {
-      return 'Search quizzes...';
     } else if (context.type === 'category') {
       return 'Search categories...';
     } else if (context.type === 'enrollment') {
@@ -358,36 +330,6 @@ export default function GlobalSearch({ initialQuery = '', className = '' }: Glob
                   </p>
                 </div>
                 {results.results.lessons.map((item) => renderResultItem(item, 'lesson'))}
-              </div>
-            )}
-            {results.results.assignments.length > 0 && (
-              <div>
-                <div className="px-4 py-2 bg-[#FAFAFA] border-b border-[#E0E0E0]">
-                  <p className="text-xs font-semibold text-[#78909C] uppercase tracking-wide">
-                    Assignments
-                  </p>
-                </div>
-                {results.results.assignments.map((item) => renderResultItem(item, 'assignment'))}
-              </div>
-            )}
-            {results.results.quizzes.length > 0 && (
-              <div>
-                <div className="px-4 py-2 bg-[#FAFAFA] border-b border-[#E0E0E0]">
-                  <p className="text-xs font-semibold text-[#78909C] uppercase tracking-wide">
-                    Quizzes
-                  </p>
-                </div>
-                {results.results.quizzes.map((item) => renderResultItem(item, 'quiz'))}
-              </div>
-            )}
-            {results.results.liveClasses.length > 0 && (
-              <div>
-                <div className="px-4 py-2 bg-[#FAFAFA] border-b border-[#E0E0E0]">
-                  <p className="text-xs font-semibold text-[#78909C] uppercase tracking-wide">
-                    Live Classes
-                  </p>
-                </div>
-                {results.results.liveClasses.map((item) => renderResultItem(item, 'live_class'))}
               </div>
             )}
             {results.results.users.length > 0 && (

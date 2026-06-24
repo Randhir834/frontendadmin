@@ -67,15 +67,6 @@ export default function AdminAuthSplitShell({ leftTitle, leftSubtitle, centered 
               <span className="min-w-0 text-xs font-medium text-text-primary text-left leading-snug line-clamp-2">Course catalog</span>
             </div>
             <div className="flex items-center gap-2 sm:gap-2.5 bg-white/90 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 sm:py-2.5 shadow-lg w-full min-h-[44px] sm:min-h-[52px] h-[44px] sm:h-[52px] box-border">
-              <div className="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-violet-50 flex items-center justify-center">
-                <svg width="12" height="12" className="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="#7C3AED" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M23 7l-7 5 7 5V7z" />
-                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                </svg>
-              </div>
-              <span className="min-w-0 text-xs font-medium text-text-primary text-left leading-snug line-clamp-2">Live classes</span>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-2.5 bg-white/90 backdrop-blur-sm rounded-full px-3 sm:px-4 py-2 sm:py-2.5 shadow-lg w-full min-h-[44px] sm:min-h-[52px] h-[44px] sm:h-[52px] box-border">
               <div className="w-6 h-6 sm:w-8 sm:h-8 shrink-0 rounded-lg bg-pink-50 flex items-center justify-center">
                 <svg width="12" height="12" className="sm:w-4 sm:h-4" viewBox="0 0 24 24" fill="none" stroke="#EC4899" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                   <line x1="18" y1="20" x2="18" y2="10" />

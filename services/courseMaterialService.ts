@@ -1,6 +1,6 @@
 import api from './api';
 
-interface CourseMaterial {
+export interface CourseMaterial {
   id: number;
   title: string;
   description: string;
@@ -10,9 +10,10 @@ interface CourseMaterial {
   mime_type: string;
   uploaded_by_name: string;
   created_at: string;
+  folder_path?: string; // NEW: folder structure from upload
 }
 
-interface AccessLog {
+export interface AccessLog {
   id: number;
   user_name: string;
   user_email: string;
@@ -31,13 +32,16 @@ class CourseMaterialService {
   async uploadMaterial(
     courseId: number,
     file: File,
-    data: { title: string; description?: string }
+    data: { title: string; description?: string; folder_path?: string }
   ): Promise<{ material: CourseMaterial }> {
     const formData = new FormData();
     formData.append('file', file);
     formData.append('title', data.title);
     if (data.description) {
       formData.append('description', data.description);
+    }
+    if (data.folder_path) {
+      formData.append('folder_path', data.folder_path);
     }
 
     const response = await api.post(`/courses/${courseId}/materials`, formData, {
@@ -116,6 +120,17 @@ class CourseMaterialService {
   }
 
   /**
+   * Get file type category from MIME type
+   */
+  getFileType(mimeType: string): string {
+    if (mimeType.includes('pdf')) return 'pdf';
+    if (mimeType.includes('powerpoint') || mimeType.includes('presentation')) return 'ppt';
+    if (mimeType.includes('image')) return 'image';
+    if (mimeType.includes('word') || mimeType.includes('document')) return 'document';
+    return 'file';
+  }
+
+  /**
    * Get file icon based on file type
    */
   getFileIcon(fileType: string): string {
@@ -163,12 +178,12 @@ class CourseMaterialService {
    * Validate file
    */
   validateFile(file: File): { valid: boolean; error?: string } {
-    const maxSize = 50 * 1024 * 1024; // 50MB
+    const maxSize = 100 * 1024 * 1024; // 100MB
     
     if (file.size > maxSize) {
       return {
         valid: false,
-        error: 'File size must be less than 50MB',
+        error: 'File size must be less than 100MB',
       };
     }
 
@@ -199,3 +214,6 @@ class CourseMaterialService {
 }
 
 export const courseMaterialService = new CourseMaterialService();
+
+// Explicitly export types for better compatibility
+export type { CourseMaterial, AccessLog };

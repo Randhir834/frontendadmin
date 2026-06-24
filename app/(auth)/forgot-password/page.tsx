@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Input from '@/components/ui/Input';
 import AdminAuthSplitShell from '@/components/layouts/AdminAuthSplitShell';
 import { authService } from '@/services/authService';
+import { getUserFriendlyError, logTechnicalError } from '@/utils/errorHandler';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -24,8 +25,8 @@ export default function ForgotPasswordPage() {
       });
       setSubmitted(true);
     } catch (err: unknown) {
-      const message =
-        (err as { response?: { data?: { error?: string } } })?.response?.data?.error || 'Something went wrong.';
+      logTechnicalError('Admin Forgot Password', err);
+      const message = getUserFriendlyError(err);
       setError(message);
     } finally {
       setLoading(false);

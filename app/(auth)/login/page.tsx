@@ -6,6 +6,7 @@ import { authService } from '@/services/authService';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import AdminAuthSplitShell from '@/components/layouts/AdminAuthSplitShell';
+import { getUserFriendlyError, logTechnicalError } from '@/utils/errorHandler';
 
 export default function LoginPage() {
   const [identifier, setIdentifier] = useState('');
@@ -13,15 +14,20 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   const router = useRouter();
 
-  // Redirect if already logged in
+  // Clear any stale tokens on mount (logout redirect)
   useEffect(() => {
-    if (isAuthenticated) {
-      router.replace('/dashboard');
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.has('logout') || urlParams.has('session_expired')) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('auth_session');
+      }
     }
-  }, [isAuthenticated, router]);
+  }, []);
 
   // Detect if the input is email or phone
   const isEmail = identifier.includes('@');
@@ -37,51 +43,14 @@ export default function LoginPage() {
       const data = await authService.login({ identifier, password, expectedRole: 'admin' });
       
       if (!data.token || !data.user) {
-        throw new Error('Invalid response from server: missing token or user data');
+        throw new Error('Invalid response from server');
       }
       
       login(data.user, data.token);
       router.push('/dashboard');
     } catch (err: unknown) {
-      // Handle different error types
-      let message = 'Login failed. Please try again.';
-      
-      if (err instanceof Error) {
-        // Network, timeout, or other errors
-        message = err.message;
-        
-        // Handle specific error types
-        if (err.message.includes('ECONNREFUSED') || err.message.includes('ENETUNREACH')) {
-          message = 'Cannot connect to server. Please check your connection and try again.';
-        } else if (err.message.includes('timeout')) {
-          message = 'Request timeout. Please try again.';
-        }
-      } else {
-        const error = err as { response?: { data?: { error?: string }; status?: number }; message?: string; code?: string };
-        
-        // Structured API error response
-        if (error.response?.data?.error) {
-          message = error.response.data.error;
-        } else if (error.response?.status === 429) {
-          message = 'Too many login attempts. Please wait a few minutes and try again.';
-        } else if (error.response?.status === 403) {
-          message = 'Access denied. Please check your credentials and try again.';
-        } else if (error.response?.status === 401) {
-          message = error.response?.data?.error || 'Invalid credentials. Please check your email/phone and password.';
-        } else if (error.message) {
-          message = error.message;
-        } else if (error.code) {
-          // Axios error code
-          if (error.code === 'ECONNREFUSED' || error.code === 'ENETUNREACH') {
-            message = 'Cannot connect to server. Please check your connection.';
-          } else if (error.code === 'ENOTFOUND') {
-            message = 'Server not found. Please check the backend URL.';
-          } else {
-            message = `Connection error: ${error.code}`;
-          }
-        }
-      }
-      
+      logTechnicalError('Admin Login', err);
+      const message = getUserFriendlyError(err);
       setError(message);
     } finally {
       setLoading(false);

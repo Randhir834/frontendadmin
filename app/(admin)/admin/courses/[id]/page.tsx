@@ -143,11 +143,6 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
         </div>
 
         <div className="flex items-center gap-3">
-          <Link href={`/admin/courses/${course.id}/materials`}>
-            <Button variant="outline" className="gap-2">
-              <FileText size={16} /> Materials
-            </Button>
-          </Link>
           <Link href={`/admin/courses/${course.id}/edit`}>
             <Button className="gap-2">
               <Edit size={16} /> Edit Course
@@ -217,200 +212,194 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
-        {/* Main Content Column */}
-        <div className="lg:col-span-2 space-y-4 md:space-y-6">
-          {/* Course Overview */}
-          <Card>
-            <CardHeader><CardTitle>Course Overview</CardTitle></CardHeader>
-            <CardContent>
-              {course.description ? (
-                <p className="text-sm text-[#475569] whitespace-pre-line leading-relaxed">{course.description}</p>
-              ) : (
-                <p className="text-sm text-[#94A3B8]">No description provided.</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Learning & Requirements */}
-          <Card>
-            <CardHeader><CardTitle>Learning & Requirements</CardTitle></CardHeader>
-            <CardContent className="space-y-6">
+      {/* Course Details */}
+      <Card>
+        <CardHeader><CardTitle>Course Details</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
+              <div className="p-2 bg-white rounded-lg">
+                <DollarSign size={18} className="text-[#16A34A]" />
+              </div>
               <div>
-                <p className="text-sm font-semibold text-[#1E293B] mb-3">What you'll learn</p>
-                {course.what_you_learn ? (
-                  <div className="space-y-2">
-                    {course.what_you_learn.split('\n').filter(item => item.trim()).map((item, index) => (
-                      <div key={index} className="flex items-start gap-2.5">
-                        <CheckCircle size={18} className="text-[#16A34A] mt-0.5 flex-shrink-0" />
-                        <span className="text-sm text-[#475569]">{item.trim()}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-[#94A3B8]">Not set</p>
-                )}
+                <p className="text-xs text-[#64748B] mb-0.5">Price</p>
+                <p className="text-base font-bold text-[#1E293B]">₹{course.price.toLocaleString()}</p>
               </div>
-              <div className="border-t border-[#E2E8F0] pt-6">
-                <p className="text-sm font-semibold text-[#1E293B] mb-3">Requirements</p>
-                {course.requirements ? (
-                  <div className="space-y-2">
-                    {course.requirements.split('\n').filter(item => item.trim()).map((item, index) => (
-                      <div key={index} className="flex items-start gap-2.5">
-                        <div className="size-1.5 bg-[#94A3B8] rounded-full mt-2 flex-shrink-0" />
-                        <span className="text-sm text-[#475569]">{item.trim()}</span>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-[#94A3B8]">Not set</p>
-                )}
+            </div>
+            <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
+              <div className="p-2 bg-white rounded-lg">
+                <Clock size={18} className="text-[#F59E0B]" />
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <p className="text-xs text-[#64748B] mb-0.5">Duration</p>
+                <p className="text-base font-bold text-[#1E293B]">{course.duration_value} {course.duration_unit}</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
+              <div className="p-2 bg-white rounded-lg">
+                <Target size={18} className="text-[#8B5CF6]" />
+              </div>
+              <div>
+                <p className="text-xs text-[#64748B] mb-0.5">Level</p>
+                <p className="text-base font-bold text-[#1E293B]">{levelLabel[course.level] || course.level}</p>
+              </div>
+            </div>
+            {course.language && (
+              <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
+                <div className="p-2 bg-white rounded-lg">
+                  <BookOpen size={18} className="text-[#3B82F6]" />
+                </div>
+                <div>
+                  <p className="text-xs text-[#64748B] mb-0.5">Language</p>
+                  <p className="text-base font-bold text-[#1E293B]">{course.language}</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
-          {/* Enrolled Students */}
-          <Card>
-            <CardHeader>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle>Enrolled Students ({students.length})</CardTitle>
-                <div className="relative w-full sm:w-auto">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-[#94A3B8]" />
-                  <input
-                    type="text"
-                    placeholder="Search students..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 pr-3 py-2 text-sm border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent w-full sm:w-64"
-                  />
+      {/* Instructor Details */}
+      <Card>
+        <CardHeader><CardTitle>Instructor Details</CardTitle></CardHeader>
+        <CardContent>
+          {course.instructors && course.instructors.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {course.instructors.map((instructor) => (
+                <div key={instructor.id} className="flex items-center gap-3 p-3 bg-[#F8FAFC] rounded-lg">
+                  <div className="size-10 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0">
+                    <Users size={18} className="text-[#0284C7]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-semibold text-[#1E293B] truncate">{instructor.name}</p>
+                      {instructor.is_primary && (
+                        <span className="text-xs bg-[#DBEAFE] text-[#1E40AF] px-2 py-0.5 rounded font-medium">Primary</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-[#64748B] truncate">{instructor.email}</p>
+                  </div>
                 </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {studentsLoading ? (
-                <div className="flex items-center justify-center py-12">
-                  <Loader2 className="size-6 animate-spin text-[#1E88E5]" />
-                </div>
-              ) : filteredStudents.length === 0 ? (
-                <div className="text-center py-12">
-                  <Users className="size-16 text-[#CBD5E1] mx-auto mb-4" />
-                  <p className="text-sm text-[#64748B] font-medium">
-                    {searchTerm ? 'No students found matching your search' : 'No students enrolled yet'}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-3 max-h-[500px] overflow-y-auto">
-                  {filteredStudents.map((student) => (
-                    <div key={student.id} className="flex items-center justify-between p-4 border border-[#E2E8F0] rounded-lg hover:border-[#1E88E5] hover:shadow-sm transition-all">
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
-                        <div className="size-12 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0">
-                          <GraduationCap className="size-6 text-[#0284C7]" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h4 className="font-semibold text-[#1E293B] truncate">{student.student_name}</h4>
-                          <p className="text-xs text-[#64748B] truncate">{student.student_email}</p>
-                          <div className="flex items-center gap-3 mt-2 text-xs">
-                            <span className={`px-2 py-1 rounded font-medium ${
-                              student.status === 'active' ? 'bg-[#DCFCE7] text-[#166534]' :
-                              student.status === 'completed' ? 'bg-[#DBEAFE] text-[#1E40AF]' :
-                              'bg-[#F1F5F9] text-[#475569]'
-                            }`}>
-                              {student.status}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="text-right ml-4">
-                        <p className="text-xs text-[#94A3B8]">Enrolled</p>
-                        <p className="text-xs font-medium text-[#64748B]">
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-[#94A3B8] text-center py-4">No instructors assigned.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Enrolled Students */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <CardTitle>Enrolled Students ({students.length})</CardTitle>
+            <div className="relative w-full sm:w-auto">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 size-4 text-[#94A3B8]" />
+              <input
+                type="text"
+                placeholder="Search students..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-9 pr-3 py-2 text-sm border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent w-full sm:w-64"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {studentsLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="size-6 animate-spin text-[#1E88E5]" />
+            </div>
+          ) : filteredStudents.length === 0 ? (
+            <div className="text-center py-12">
+              <Users className="size-16 text-[#CBD5E1] mx-auto mb-4" />
+              <p className="text-sm text-[#64748B] font-medium">
+                {searchTerm ? 'No students found matching your search' : 'No students enrolled yet'}
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {filteredStudents.map((student) => (
+                <div key={student.id} className="flex items-center justify-between p-4 border border-[#E2E8F0] rounded-lg hover:border-[#1E88E5] hover:shadow-sm transition-all">
+                  <div className="flex items-center gap-4 flex-1 min-w-0">
+                    <div className="size-12 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0">
+                      <GraduationCap className="size-6 text-[#0284C7]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-[#1E293B] truncate">{student.student_name}</h4>
+                      <p className="text-xs text-[#64748B] truncate">{student.student_email}</p>
+                      <div className="flex items-center gap-3 mt-2 text-xs">
+                        <span className={`px-2 py-1 rounded font-medium ${
+                          student.status === 'active' ? 'bg-[#DCFCE7] text-[#166534]' :
+                          student.status === 'completed' ? 'bg-[#DBEAFE] text-[#1E40AF]' :
+                          'bg-[#F1F5F9] text-[#475569]'
+                        }`}>
+                          {student.status}
+                        </span>
+                        <span className="text-[#94A3B8]">
                           {new Date(student.enrolled_at).toLocaleDateString()}
-                        </p>
+                        </span>
                       </div>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar Column */}
-        <div className="space-y-4 md:space-y-6">
-          {/* Course Details */}
-          <Card>
-            <CardHeader><CardTitle>Course Details</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
-                <div className="p-2 bg-white rounded-lg">
-                  <DollarSign size={18} className="text-[#16A34A]" />
-                </div>
-                <div>
-                  <p className="text-xs text-[#64748B] mb-0.5">Price</p>
-                  <p className="text-base font-bold text-[#1E293B]">₹{course.price.toLocaleString()}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
-                <div className="p-2 bg-white rounded-lg">
-                  <Clock size={18} className="text-[#F59E0B]" />
-                </div>
-                <div>
-                  <p className="text-xs text-[#64748B] mb-0.5">Duration</p>
-                  <p className="text-base font-bold text-[#1E293B]">{course.duration_value} {course.duration_unit}</p>
-                </div>
-              </div>
-              <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
-                <div className="p-2 bg-white rounded-lg">
-                  <Target size={18} className="text-[#8B5CF6]" />
-                </div>
-                <div>
-                  <p className="text-xs text-[#64748B] mb-0.5">Level</p>
-                  <p className="text-base font-bold text-[#1E293B]">{levelLabel[course.level] || course.level}</p>
-                </div>
-              </div>
-              {course.language && (
-                <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
-                  <div className="p-2 bg-white rounded-lg">
-                    <BookOpen size={18} className="text-[#3B82F6]" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-[#64748B] mb-0.5">Language</p>
-                    <p className="text-base font-bold text-[#1E293B]">{course.language}</p>
                   </div>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-          {/* Instructors */}
-          <Card>
-            <CardHeader><CardTitle>Instructors</CardTitle></CardHeader>
-            <CardContent>
-              {course.instructors && course.instructors.length > 0 ? (
-                <div className="space-y-3">
-                  {course.instructors.map((instructor) => (
-                    <div key={instructor.id} className="flex items-center gap-3 p-3 bg-[#F8FAFC] rounded-lg">
-                      <div className="size-10 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0">
-                        <Users size={18} className="text-[#0284C7]" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-semibold text-[#1E293B] truncate">{instructor.name}</p>
-                          {instructor.is_primary && (
-                            <span className="text-xs bg-[#DBEAFE] text-[#1E40AF] px-2 py-0.5 rounded font-medium">Primary</span>
-                          )}
-                        </div>
-                        <p className="text-xs text-[#64748B] truncate">{instructor.email}</p>
-                      </div>
+      {/* Course Overview */}
+      <Card>
+        <CardHeader><CardTitle>Course Overview</CardTitle></CardHeader>
+        <CardContent>
+          {course.description ? (
+            <p className="text-sm text-[#475569] whitespace-pre-line leading-relaxed">{course.description}</p>
+          ) : (
+            <p className="text-sm text-[#94A3B8]">No description provided.</p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Learning & Requirements */}
+      <Card>
+        <CardHeader><CardTitle>Learning & Requirements</CardTitle></CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div>
+              <p className="text-sm font-semibold text-[#1E293B] mb-3">What you'll learn</p>
+              {course.what_you_learn ? (
+                <div className="space-y-2">
+                  {course.what_you_learn.split('\n').filter(item => item.trim()).map((item, index) => (
+                    <div key={index} className="flex items-start gap-2.5">
+                      <CheckCircle size={18} className="text-[#16A34A] mt-0.5 flex-shrink-0" />
+                      <span className="text-sm text-[#475569]">{item.trim()}</span>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-[#94A3B8] text-center py-4">No instructors assigned.</p>
+                <p className="text-sm text-[#94A3B8]">Not set</p>
               )}
-            </CardContent>
-          </Card>
-        </div>
-      </div>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-[#1E293B] mb-3">Requirements</p>
+              {course.requirements ? (
+                <div className="space-y-2">
+                  {course.requirements.split('\n').filter(item => item.trim()).map((item, index) => (
+                    <div key={index} className="flex items-start gap-2.5">
+                      <div className="size-1.5 bg-[#94A3B8] rounded-full mt-2 flex-shrink-0" />
+                      <span className="text-sm text-[#475569]">{item.trim()}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-[#94A3B8]">Not set</p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }

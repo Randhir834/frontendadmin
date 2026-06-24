@@ -11,9 +11,21 @@ const api = axios.create({
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
-      const token = localStorage.getItem('token');
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
+      // Don't add Authorization header for public auth endpoints
+      const publicEndpoints = ['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password', '/auth/refresh-token'];
+      const isPublicEndpoint = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+      
+      if (!isPublicEndpoint) {
+        const token = localStorage.getItem('token');
+        const sessionToken = localStorage.getItem('sessionToken');
+        
+        if (token) {
+          config.headers.Authorization = `Bearer ${token}`;
+        }
+        
+        if (sessionToken) {
+          config.headers['X-Session-Token'] = sessionToken;
+        }
       }
     }
     return config;
@@ -29,12 +41,13 @@ api.interceptors.response.use(
       if (typeof window !== 'undefined') {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('sessionToken');
         window.location.href = '/login';
       }
     }
     
-    // Pass through network errors, timeouts, and other errors
-    // Don't automatically redirect on network errors - let the page handle them
+    // Don't modify the error - let components handle user-friendly messages
+    // via the errorHandler utility
     return Promise.reject(error);
   }
 );

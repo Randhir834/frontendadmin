@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect, use, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Check, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield, ExternalLink, Download, AlertCircle } from 'lucide-react';
+import { Loader2, Check, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield, ExternalLink, Download, AlertCircle, Folder, FolderOpen, ArrowUpDown, ChevronDown, ChevronRight } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { courseService } from '@/services/courseService';
-import { courseMaterialService, type CourseMaterial } from '@/services/courseMaterialService';
+import { courseMaterialService } from '@/services/courseMaterialService';
+import type { CourseMaterial, AccessLog } from '@/services/courseMaterialService';
 import { imageUploadService } from '@/services/imageUploadService';
 import api from '@/services/api';
 import type { Course, CourseInstructor } from '@/types';
@@ -23,6 +24,7 @@ interface NewCourseMaterial {
   title: string;
   description: string;
   id: string; // temporary ID for UI
+  folderPath?: string; // track folder structure
 }
 
 export default function AdminEditCoursePage({ params }: { params: Promise<{ id: string }> }) {
@@ -43,20 +45,22 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
   const [courseImagePreview, setCourseImagePreview] = useState<string>('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string>('');
-
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
+  const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
   const [form, setForm] = useState({
     title: '',
     description: '',
     price: '',
     category_id: '',
     status: 'published' as 'published' | 'archived',
-    duration_value: '',
-    duration_unit: 'days' as 'days' | 'weeks' | 'months',
     level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     language: 'English',
     what_you_learn: '',
     requirements: '',
     thumbnail_url: '',
+    total_lessons: '',
   });
 
   useEffect(() => {
@@ -76,13 +80,12 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
           price: c.price?.toString() || '',
           category_id: c.category_id?.toString() || '',
           status: c.status || 'published',
-          duration_value: c.duration_value?.toString() || '',
-          duration_unit: c.duration_unit || 'days',
           level: c.level || 'beginner',
           language: c.language || 'English',
           what_you_learn: c.what_you_learn || '',
           requirements: c.requirements || '',
           thumbnail_url: c.thumbnail_url || '',
+          total_lessons: c.total_lessons?.toString() || '',
         });
 
         // Set image preview if exists
@@ -119,6 +122,14 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
     setSelectedInstructors((prev) =>
       prev.includes(instId) ? prev.filter((i) => i !== instId) : [...prev, instId]
     );
+  };
+
+  // Toggle folder expansion
+  const toggleFolder = (folderPath: string) => {
+    setExpandedFolders(prev => ({
+      ...prev,
+      [folderPath]: !prev[folderPath]
+    }));
   };
 
   // Course Image Upload Functions
@@ -169,29 +180,142 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
   };
 
   // Course Materials Functions
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    files.forEach(file => {
+  const processFiles = (files: FileList | File[], folderPath?: string) => {
+    const newMats: NewCourseMaterial[] = [];
+    const errors: string[] = [];
+
+    Array.from(files).forEach(file => {
       const validation = courseMaterialService.validateFile(file);
       
       if (!validation.valid) {
-        alert(validation.error);
+        errors.push(`${file.name}: ${validation.error}`);
         return;
+      }
+
+      // Extract folder path from file.webkitRelativePath if available
+      const relativePath = (file as any).webkitRelativePath || '';
+      let materialFolderPath = folderPath;
+      
+      if (relativePath) {
+        const pathParts = relativePath.split('/');
+        if (pathParts.length > 1) {
+          // Remove filename, keep folder path
+          materialFolderPath = pathParts.slice(0, -1).join('/');
+        }
       }
 
       const newMaterial: NewCourseMaterial = {
         file,
         title: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
         description: '',
-        id: Math.random().toString(36).substring(2, 15) // Temporary ID
+        id: Math.random().toString(36).substring(2, 15), // Temporary ID
+        folderPath: materialFolderPath
       };
 
-      setNewMaterials(prev => [...prev, newMaterial]);
+      newMats.push(newMaterial);
     });
 
-    // Reset file input
-    e.target.value = '';
+    if (errors.length > 0) {
+      alert(`Some files were skipped:\n${errors.join('\n')}`);
+    }
+
+    setNewMaterials(prev => [...prev, ...newMats]);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    processFiles(files);
+    e.target.value = ''; // Reset input
+  };
+
+  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    processFiles(files);
+    e.target.value = ''; // Reset input
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const items = e.dataTransfer.items;
+    const files: File[] = [];
+
+    const processEntry = async (entry: any, path = '') => {
+      if (entry.isFile) {
+        return new Promise<void>((resolve) => {
+          entry.file((file: File) => {
+            Object.defineProperty(file, 'webkitRelativePath', {
+              value: path + file.name,
+              writable: false
+            });
+            files.push(file);
+            resolve();
+          });
+        });
+      } else if (entry.isDirectory) {
+        const dirReader = entry.createReader();
+        return new Promise<void>((resolve) => {
+          dirReader.readEntries(async (entries: any[]) => {
+            for (const entry of entries) {
+              await processEntry(entry, path + entry.name + '/');
+            }
+            resolve();
+          });
+        });
+      }
+    };
+
+    const processItems = async () => {
+      if (items) {
+        const promises = [];
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.kind === 'file') {
+            const entry = item.webkitGetAsEntry();
+            if (entry) {
+              promises.push(processEntry(entry));
+            }
+          }
+        }
+        await Promise.all(promises);
+      } else {
+        const fileList = e.dataTransfer.files;
+        files.push(...Array.from(fileList));
+      }
+
+      if (files.length > 0) {
+        processFiles(files);
+      }
+    };
+
+    processItems();
   };
 
   const updateNewMaterialTitle = (id: string, title: string) => {
@@ -213,6 +337,30 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
   const removeNewMaterial = (id: string) => {
     setNewMaterials(prev => prev.filter(material => material.id !== id));
   };
+
+  const reorderNewMaterial = (id: string, direction: 'up' | 'down') => {
+    setNewMaterials(prev => {
+      const index = prev.findIndex(m => m.id === id);
+      if (index === -1) return prev;
+      
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= prev.length) return prev;
+      
+      const newMats = [...prev];
+      [newMats[index], newMats[newIndex]] = [newMats[newIndex], newMats[index]];
+      return newMats;
+    });
+  };
+
+  // Group new materials by folder
+  const groupedNewMaterials = newMaterials.reduce((acc, material) => {
+    const folder = material.folderPath || 'Root';
+    if (!acc[folder]) {
+      acc[folder] = [];
+    }
+    acc[folder].push(material);
+    return acc;
+  }, {} as Record<string, NewCourseMaterial[]>);
 
   const deleteExistingMaterial = async (materialId: number) => {
     if (!confirm('Are you sure you want to delete this material? This action cannot be undone.')) {
@@ -289,7 +437,8 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
       const uploadPromises = newMaterials.map(material =>
         courseMaterialService.uploadMaterial(courseId, material.file, {
           title: material.title,
-          description: material.description
+          description: material.description,
+          folder_path: material.folderPath
         })
       );
 
@@ -336,13 +485,12 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
         price: form.price ? Number(form.price) : 0,
         category_id: form.category_id ? Number(form.category_id) : undefined,
         status: form.status,
-        duration_value: form.duration_value ? Number(form.duration_value) : 0,
-        duration_unit: form.duration_unit,
         level: form.level,
         language: form.language,
         what_you_learn: form.what_you_learn || undefined,
         requirements: form.requirements || undefined,
         thumbnail_url: thumbnailUrl || undefined,
+        total_lessons: form.total_lessons ? Number(form.total_lessons) : 0,
         instructor_ids: selectedInstructors,
       });
 
@@ -481,19 +629,7 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
           <CardHeader><CardTitle>Course Details</CardTitle></CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Input label="Duration Value" id="duration_value" name="duration_value" type="number" min="0" value={form.duration_value} onChange={handleChange} />
-                <div className="space-y-1">
-                  <label htmlFor="duration_unit" className="block text-sm font-medium text-text-primary">Duration Unit</label>
-                  <select id="duration_unit" name="duration_unit" value={form.duration_unit} onChange={handleChange}
-                    className="w-full px-3 py-2 rounded-lg border border-border text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500">
-                    <option value="days">Days</option>
-                    <option value="weeks">Weeks</option>
-                    <option value="months">Months</option>
-                  </select>
-                </div>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="space-y-1">
                   <label htmlFor="level" className="block text-sm font-medium text-text-primary">Level</label>
                   <select id="level" name="level" value={form.level} onChange={handleChange}
@@ -504,6 +640,7 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
                   </select>
                 </div>
                 <Input label="Language" id="language" name="language" value={form.language} onChange={handleChange} />
+                <Input label="Total Lessons" id="total_lessons" name="total_lessons" type="number" min="0" value={form.total_lessons} onChange={handleChange} />
               </div>
               <div className="space-y-1">
                 <label htmlFor="what_you_learn" className="block text-sm font-medium text-text-primary">What You&apos;ll Learn</label>
@@ -544,57 +681,105 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
                   <span>Existing Materials ({existingMaterials.length})</span>
                 </h4>
                 
-                <div className="space-y-3">
-                  {existingMaterials.map((material) => (
-                    <div
-                      key={material.id}
-                      className="border border-border rounded-lg p-4 space-y-3"
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3 flex-1">
-                          {getExistingFileIcon(material.file_type)}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-text-primary truncate">
-                              {material.title}
-                            </p>
-                            <p className="text-sm text-text-muted">
-                              {material.file_name} • {courseMaterialService.formatFileSize(material.file_size)}
-                            </p>
-                            {material.description && (
-                              <p className="text-sm text-text-muted mt-1 line-clamp-2">
-                                {material.description}
-                              </p>
+                {(() => {
+                  // Group materials by folder
+                  const groupedMaterials = existingMaterials.reduce((acc, material) => {
+                    const folder = material.folder_path || 'Root';
+                    if (!acc[folder]) {
+                      acc[folder] = [];
+                    }
+                    acc[folder].push(material);
+                    return acc;
+                  }, {} as Record<string, CourseMaterial[]>);
+
+                  return (
+                    <div className="space-y-4">
+                      {Object.keys(groupedMaterials).map((folderPath) => {
+                        const isExpanded = expandedFolders[folderPath] !== false; // Default to expanded
+                        const fileCount = groupedMaterials[folderPath].length;
+                        
+                        return (
+                          <div key={folderPath} className="space-y-3">
+                            {folderPath !== 'Root' && (
+                              <button
+                                type="button"
+                                onClick={() => toggleFolder(folderPath)}
+                                className="w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-primary-50 to-primary-100/50 rounded-lg border border-primary-200 hover:border-primary-400 transition-all cursor-pointer"
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="h-5 w-5 text-primary-600 flex-shrink-0" />
+                                ) : (
+                                  <ChevronRight className="h-5 w-5 text-primary-600 flex-shrink-0" />
+                                )}
+                                <Folder className="h-5 w-5 text-primary-600 flex-shrink-0" />
+                                <div className="flex-1 text-left">
+                                  <h4 className="font-semibold text-primary-900">{folderPath}</h4>
+                                  <p className="text-xs text-primary-600 mt-0.5">
+                                    {fileCount} file{fileCount !== 1 ? 's' : ''}
+                                  </p>
+                                </div>
+                              </button>
                             )}
-                            <p className="text-xs text-text-muted mt-1">
-                              Uploaded by {material.uploaded_by_name} • {courseMaterialService.formatDate(material.created_at)}
-                            </p>
+                            
+                            {isExpanded && (
+                              <div className="space-y-3">
+                                {groupedMaterials[folderPath].map((material) => (
+                                  <div
+                                    key={material.id}
+                                    className="border border-border rounded-lg p-4 space-y-3"
+                                  >
+                                    <div className="flex items-start justify-between">
+                                      <div className="flex items-center space-x-3 flex-1">
+                                        {getExistingFileIcon(material.file_type)}
+                                        <div className="flex-1 min-w-0">
+                                          <p className="font-medium text-text-primary truncate">
+                                            {material.title}
+                                          </p>
+                                          <p className="text-sm text-text-muted">
+                                            {material.file_name} • {courseMaterialService.formatFileSize(material.file_size)}
+                                          </p>
+                                          {material.description && (
+                                            <p className="text-sm text-text-muted mt-1 line-clamp-2">
+                                              {material.description}
+                                            </p>
+                                          )}
+                                          <p className="text-xs text-text-muted mt-1">
+                                            Uploaded by {material.uploaded_by_name} • {courseMaterialService.formatDate(material.created_at)}
+                                          </p>
+                                        </div>
+                                      </div>
+                                      <div className="flex items-center space-x-2">
+                                        <Button
+                                          type="button"
+                                          variant="outline"
+                                          size="sm"
+                                          onClick={() => viewExistingMaterial(material)}
+                                          className="flex items-center space-x-1"
+                                        >
+                                          <ExternalLink className="h-4 w-4" />
+                                          <span>View</span>
+                                        </Button>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="sm"
+                                          onClick={() => deleteExistingMaterial(material.id)}
+                                          className="text-red-600 hover:bg-red-50"
+                                        >
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => viewExistingMaterial(material)}
-                            className="flex items-center space-x-1"
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                            <span>View</span>
-                          </Button>
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteExistingMaterial(material.id)}
-                            className="text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  );
+                })()}
               </div>
             ) : (
               <div className="text-center py-6 border border-dashed border-border rounded-lg">
@@ -610,9 +795,20 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
                 <span>Add New Materials</span>
               </h4>
 
-              {/* File Upload Area */}
-              <div className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary-500 transition-colors">
+              {/* File Upload Area with Drag & Drop */}
+              <div 
+                className={`border-2 border-dashed rounded-lg p-6 text-center transition-all ${
+                  isDragging 
+                    ? 'border-primary-500 bg-primary-50 scale-[1.02]' 
+                    : 'border-border hover:border-primary-500'
+                }`}
+                onDragEnter={handleDragEnter}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
                 <input
+                  ref={fileInputRef}
                   type="file"
                   id="new-course-materials"
                   multiple
@@ -620,81 +816,192 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
                   onChange={handleFileSelect}
                   className="hidden"
                 />
-                <label htmlFor="new-course-materials" className="cursor-pointer">
-                  <Upload className="h-8 w-8 text-text-muted mx-auto mb-3" />
-                  <h3 className="text-sm font-medium text-text-primary mb-2">
-                    Upload New Materials
-                  </h3>
-                  <p className="text-xs text-text-muted mb-3">
-                    Drag and drop files here, or click to browse
-                  </p>
-                </label>
+                <input
+                  ref={folderInputRef}
+                  type="file"
+                  id="new-course-materials-folder"
+                  multiple
+                  // @ts-ignore - webkitdirectory is not in TS types but widely supported
+                  webkitdirectory="true"
+                  directory="true"
+                  onChange={handleFolderSelect}
+                  className="hidden"
+                />
+                
+                {isDragging ? (
+                  <div className="py-4">
+                    <FolderOpen className="h-16 w-16 text-primary-500 mx-auto mb-4 animate-bounce" />
+                    <h3 className="text-lg font-medium text-primary-500 mb-2">
+                      Drop files or folders here
+                    </h3>
+                    <p className="text-sm text-text-muted">
+                      Release to upload
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <Upload className="h-8 w-8 text-text-muted mx-auto mb-3" />
+                    <h3 className="text-sm font-medium text-text-primary mb-2">
+                      Upload New Materials
+                    </h3>
+                    <p className="text-xs text-text-muted mb-4">
+                      Drag and drop files or folders here
+                    </p>
+                    
+                    <div className="flex items-center justify-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2"
+                      >
+                        <FileText className="h-4 w-4" />
+                        Choose Files
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => folderInputRef.current?.click()}
+                        className="flex items-center gap-2"
+                      >
+                        <Folder className="h-4 w-4" />
+                        Choose Folder
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="text-xs text-text-muted bg-hover p-3 rounded-lg">
                 <strong>Supported formats:</strong> PDF, PPT, Word documents, Images (JPEG, PNG, WebP, GIF)
                 <br />
                 <strong>Maximum file size:</strong> 100MB per file
+                <br />
+                <strong>Folder upload:</strong> All files within the folder will be uploaded while preserving the structure
               </div>
 
-              {/* New Materials List */}
+              {/* New Materials List - Grouped by Folder */}
               {newMaterials.length > 0 && (
-                <div className="space-y-3">
-                  <h5 className="font-medium text-text-primary flex items-center space-x-2">
-                    <Plus className="h-4 w-4" />
-                    <span>New Materials to Upload ({newMaterials.length})</span>
-                  </h5>
-                  
-                  {newMaterials.map((material) => (
-                    <div
-                      key={material.id}
-                      className="border border-border rounded-lg p-4 space-y-3 bg-primary-50"
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-medium text-text-primary flex items-center space-x-2">
+                      <Plus className="h-4 w-4" />
+                      <span>New Materials to Upload ({newMaterials.length})</span>
+                    </h5>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        if (confirm('Remove all new materials?')) {
+                          setNewMaterials([]);
+                        }
+                      }}
+                      className="text-red-600 hover:bg-red-50"
                     >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-3 flex-1">
-                          {getFileIcon(material.file)}
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium text-text-primary truncate">
-                              {material.file.name}
-                            </p>
-                            <p className="text-sm text-text-muted">
-                              {courseMaterialService.formatFileSize(material.file.size)}
-                            </p>
-                          </div>
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Clear All
+                    </Button>
+                  </div>
+                  
+                  {Object.keys(groupedNewMaterials).map((folderPath) => (
+                    <div key={folderPath} className="space-y-2">
+                      {folderPath !== 'Root' && (
+                        <div className="flex items-center gap-2 text-sm font-medium text-text-primary bg-hover px-3 py-2 rounded-lg">
+                          <Folder className="h-4 w-4 text-primary-500" />
+                          <span>{folderPath}</span>
+                          <span className="text-xs text-text-muted">
+                            ({groupedNewMaterials[folderPath].length} files)
+                          </span>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => removeNewMaterial(material.id)}
-                          className="text-red-600 hover:bg-red-50"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      )}
+                      
+                      {groupedNewMaterials[folderPath].map((material) => {
+                        const materialIndex = newMaterials.findIndex(m => m.id === material.id);
+                        return (
+                          <div
+                            key={material.id}
+                            className="border border-border rounded-lg p-4 space-y-3 bg-primary-50"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center space-x-3 flex-1">
+                                {getFileIcon(material.file)}
+                                <div className="flex-1 min-w-0">
+                                  <p className="font-medium text-text-primary truncate">
+                                    {material.file.name}
+                                  </p>
+                                  <p className="text-sm text-text-muted">
+                                    {courseMaterialService.formatFileSize(material.file.size)}
+                                    {material.folderPath && material.folderPath !== 'Root' && (
+                                      <span className="ml-2 text-xs">
+                                        📁 {material.folderPath}
+                                      </span>
+                                    )}
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => reorderNewMaterial(material.id, 'up')}
+                                  disabled={materialIndex === 0}
+                                  title="Move up"
+                                  className="px-2"
+                                >
+                                  <ArrowUpDown className="h-4 w-4 rotate-180" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => reorderNewMaterial(material.id, 'down')}
+                                  disabled={materialIndex === newMaterials.length - 1}
+                                  title="Move down"
+                                  className="px-2"
+                                >
+                                  <ArrowUpDown className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeNewMaterial(material.id)}
+                                  className="text-red-600 hover:bg-red-50 px-2"
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-sm font-medium text-text-primary mb-1">
-                            Title *
-                          </label>
-                          <Input
-                            value={material.title}
-                            onChange={(e) => updateNewMaterialTitle(material.id, e.target.value)}
-                            placeholder="Enter material title"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-text-primary mb-1">
-                            Description
-                          </label>
-                          <Input
-                            value={material.description}
-                            onChange={(e) => updateNewMaterialDescription(material.id, e.target.value)}
-                            placeholder="Optional description"
-                          />
-                        </div>
-                      </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div>
+                                <label className="block text-sm font-medium text-text-primary mb-1">
+                                  Title *
+                                </label>
+                                <Input
+                                  value={material.title}
+                                  onChange={(e) => updateNewMaterialTitle(material.id, e.target.value)}
+                                  placeholder="Enter material title"
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-sm font-medium text-text-primary mb-1">
+                                  Description
+                                </label>
+                                <Input
+                                  value={material.description}
+                                  onChange={(e) => updateNewMaterialDescription(material.id, e.target.value)}
+                                  placeholder="Optional description"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   ))}
                 </div>

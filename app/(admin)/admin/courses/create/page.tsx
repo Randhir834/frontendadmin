@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Check, X, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield, AlertCircle } from 'lucide-react';
+import { Loader2, Check, X, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield, AlertCircle, Folder, FolderOpen, ArrowUpDown } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -22,6 +22,7 @@ interface CourseMaterial {
   title: string;
   description: string;
   id: string; // temporary ID for UI
+  folderPath?: string; // track folder structure
 }
 
 export default function AdminCreateCoursePage() {
@@ -37,15 +38,18 @@ export default function AdminCreateCoursePage() {
   const [courseImagePreview, setCourseImagePreview] = useState<string>('');
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imageError, setImageError] = useState<string>('');
+  const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{fileName: string; progress: number}[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const folderInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     title: '',
     description: '',
     price: '',
-    duration_value: '',
-    duration_unit: 'days' as 'days' | 'weeks' | 'months',
     level: 'beginner' as 'beginner' | 'intermediate' | 'advanced',
     language: 'English',
     thumbnail_url: '',
+    total_lessons: '',
   });
 
   useEffect(() => {
@@ -150,29 +154,146 @@ export default function AdminCreateCoursePage() {
   };
 
   // Course Materials Functions
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    files.forEach(file => {
+  const processFiles = (files: FileList | File[], folderPath?: string) => {
+    const newMaterials: CourseMaterial[] = [];
+    const errors: string[] = [];
+
+    Array.from(files).forEach(file => {
       const validation = courseMaterialService.validateFile(file);
       
       if (!validation.valid) {
-        alert(validation.error);
+        errors.push(`${file.name}: ${validation.error}`);
         return;
+      }
+
+      // Extract folder path from file.webkitRelativePath if available
+      const relativePath = (file as any).webkitRelativePath || '';
+      let materialFolderPath = folderPath;
+      
+      if (relativePath) {
+        const pathParts = relativePath.split('/');
+        if (pathParts.length > 1) {
+          // Remove filename, keep folder path
+          materialFolderPath = pathParts.slice(0, -1).join('/');
+        }
       }
 
       const newMaterial: CourseMaterial = {
         file,
         title: file.name.replace(/\.[^/.]+$/, ''), // Remove extension
         description: '',
-        id: Math.random().toString(36).substring(2, 15) // Temporary ID
+        id: Math.random().toString(36).substring(2, 15), // Temporary ID
+        folderPath: materialFolderPath
       };
 
-      setCourseMaterials(prev => [...prev, newMaterial]);
+      newMaterials.push(newMaterial);
     });
 
-    // Reset file input
-    e.target.value = '';
+    if (errors.length > 0) {
+      alert(`Some files were skipped:\n${errors.join('\n')}`);
+    }
+
+    setCourseMaterials(prev => [...prev, ...newMaterials]);
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    processFiles(files);
+    e.target.value = ''; // Reset input
+  };
+
+  const handleFolderSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    
+    processFiles(files);
+    e.target.value = ''; // Reset input
+  };
+
+  // Drag and drop handlers
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Only set to false if leaving the drop zone entirely
+    if (e.currentTarget === e.target) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    const items = e.dataTransfer.items;
+    const files: File[] = [];
+
+    const processEntry = async (entry: any, path = '') => {
+      if (entry.isFile) {
+        return new Promise<void>((resolve) => {
+          entry.file((file: File) => {
+            // Add folder path info to file
+            Object.defineProperty(file, 'webkitRelativePath', {
+              value: path + file.name,
+              writable: false
+            });
+            files.push(file);
+            resolve();
+          });
+        });
+      } else if (entry.isDirectory) {
+        const dirReader = entry.createReader();
+        return new Promise<void>((resolve) => {
+          dirReader.readEntries(async (entries: any[]) => {
+            for (const entry of entries) {
+              await processEntry(entry, path + entry.name + '/');
+            }
+            resolve();
+          });
+        });
+      }
+    };
+
+    const processItems = async () => {
+      if (items) {
+        // Use DataTransferItemList interface
+        const promises = [];
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          if (item.kind === 'file') {
+            const entry = item.webkitGetAsEntry();
+            if (entry) {
+              promises.push(processEntry(entry));
+            }
+          }
+        }
+        await Promise.all(promises);
+      } else {
+        // Fallback for browsers that don't support DataTransferItemList
+        const fileList = e.dataTransfer.files;
+        files.push(...Array.from(fileList));
+      }
+
+      if (files.length > 0) {
+        processFiles(files);
+      }
+    };
+
+    processItems();
   };
 
   const updateMaterialTitle = (id: string, title: string) => {
@@ -194,6 +315,30 @@ export default function AdminCreateCoursePage() {
   const removeMaterial = (id: string) => {
     setCourseMaterials(prev => prev.filter(material => material.id !== id));
   };
+
+  const reorderMaterial = (id: string, direction: 'up' | 'down') => {
+    setCourseMaterials(prev => {
+      const index = prev.findIndex(m => m.id === id);
+      if (index === -1) return prev;
+      
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= prev.length) return prev;
+      
+      const newMaterials = [...prev];
+      [newMaterials[index], newMaterials[newIndex]] = [newMaterials[newIndex], newMaterials[index]];
+      return newMaterials;
+    });
+  };
+
+  // Group materials by folder
+  const groupedMaterials = courseMaterials.reduce((acc, material) => {
+    const folder = material.folderPath || 'Root';
+    if (!acc[folder]) {
+      acc[folder] = [];
+    }
+    acc[folder].push(material);
+    return acc;
+  }, {} as Record<string, CourseMaterial[]>);
 
   const getFileIcon = (file: File) => {
     const type = courseMaterialService.getFileType(file.type);
@@ -218,7 +363,8 @@ export default function AdminCreateCoursePage() {
       const uploadPromises = courseMaterials.map(material =>
         courseMaterialService.uploadMaterial(courseId, material.file, {
           title: material.title,
-          description: material.description
+          description: material.description,
+          folder_path: material.folderPath
         })
       );
 
@@ -270,7 +416,7 @@ export default function AdminCreateCoursePage() {
         ...form,
         thumbnail_url: thumbnailUrl,
         price: parseFloat(form.price) || 0,
-        duration_value: parseInt(form.duration_value) || 1,
+        total_lessons: parseInt(form.total_lessons) || 0,
         what_you_learn: whatYouLearnItems.filter(item => item.trim()).join('\n'),
         requirements: requirementItems.filter(item => item.trim()).join('\n'),
         instructor_ids: selectedInstructors,
@@ -422,7 +568,7 @@ export default function AdminCreateCoursePage() {
             <CardTitle>Course Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[#374151] mb-2">
                   Price (₹)
@@ -453,7 +599,9 @@ export default function AdminCreateCoursePage() {
                   <option value="advanced">Advanced</option>
                 </select>
               </div>
-              
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[#374151] mb-2">
                   Language
@@ -465,37 +613,19 @@ export default function AdminCreateCoursePage() {
                   placeholder="English"
                 />
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-[#374151] mb-2">
-                  Duration
+                  Total Lessons
                 </label>
                 <Input
-                  name="duration_value"
+                  name="total_lessons"
                   type="number"
-                  min="1"
-                  value={form.duration_value}
+                  min="0"
+                  value={form.total_lessons}
                   onChange={handleChange}
-                  placeholder="1"
+                  placeholder="0"
                 />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-[#374151] mb-2">
-                  Duration Unit
-                </label>
-                <select
-                  name="duration_unit"
-                  value={form.duration_unit}
-                  onChange={handleChange}
-                  className="w-full px-3 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#1E88E5] focus:border-transparent"
-                >
-                  <option value="days">Days</option>
-                  <option value="weeks">Weeks</option>
-                  <option value="months">Months</option>
-                </select>
               </div>
             </div>
           </CardContent>
@@ -624,13 +754,24 @@ export default function AdminCreateCoursePage() {
             </CardTitle>
             <p className="text-sm text-[#64748B] mt-1">
               Upload PDFs, PPTs, and images that will be securely accessible only to assigned instructors.
-              Files are protected against downloads and screenshots.
+              Files are protected against downloads and screenshots. You can upload individual files or entire folders.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* File Upload Area */}
-            <div className="border-2 border-dashed border-[#E2E8F0] rounded-lg p-6 text-center hover:border-[#1E88E5] transition-colors">
+            {/* File Upload Area with Drag & Drop */}
+            <div 
+              className={`border-2 border-dashed rounded-lg p-6 text-center transition-all ${
+                isDragging 
+                  ? 'border-[#1E88E5] bg-[#1E88E5]/5 scale-[1.02]' 
+                  : 'border-[#E2E8F0] hover:border-[#1E88E5]'
+              }`}
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+            >
               <input
+                ref={fileInputRef}
                 type="file"
                 id="course-materials"
                 multiple
@@ -638,83 +779,215 @@ export default function AdminCreateCoursePage() {
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <label htmlFor="course-materials" className="cursor-pointer">
-                <Upload className="h-12 w-12 text-[#64748B] mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-[#1E293B] mb-2">
-                  Upload Course Materials
-                </h3>
-                <p className="text-sm text-[#64748B] mb-4">
-                  Drag and drop files here, or click to browse
-                </p>
-              </label>
+              <input
+                ref={folderInputRef}
+                type="file"
+                id="course-materials-folder"
+                multiple
+                // @ts-ignore - webkitdirectory is not in TS types but widely supported
+                webkitdirectory="true"
+                directory="true"
+                onChange={handleFolderSelect}
+                className="hidden"
+              />
+              
+              {isDragging ? (
+                <div className="py-4">
+                  <FolderOpen className="h-16 w-16 text-[#1E88E5] mx-auto mb-4 animate-bounce" />
+                  <h3 className="text-lg font-medium text-[#1E88E5] mb-2">
+                    Drop files or folders here
+                  </h3>
+                  <p className="text-sm text-[#64748B]">
+                    Release to upload
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <Upload className="h-12 w-12 text-[#64748B] mx-auto mb-4" />
+                  <h3 className="text-lg font-medium text-[#1E293B] mb-2">
+                    Upload Course Materials
+                  </h3>
+                  <p className="text-sm text-[#64748B] mb-4">
+                    Drag and drop files or folders here
+                  </p>
+                  
+                  <div className="flex items-center justify-center gap-3">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="flex items-center gap-2"
+                    >
+                      <FileText className="h-4 w-4" />
+                      Choose Files
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => folderInputRef.current?.click()}
+                      className="flex items-center gap-2"
+                    >
+                      <Folder className="h-4 w-4" />
+                      Choose Folder
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="text-xs text-[#64748B] bg-[#F8FAFC] p-3 rounded-lg">
               <strong>Supported formats:</strong> PDF, PPT, Word documents, Images (JPEG, PNG, WebP, GIF)
               <br />
-              <strong>Maximum file size:</strong> 100MB per file
+              <strong>Maximum file size:</strong> 50MB per file
+              <br />
+              <strong>Folder upload:</strong> All files within the folder will be uploaded while preserving the structure
               <br />
               <strong>Security:</strong> Files will be encrypted and protected against downloads/screenshots
             </div>
 
-            {/* Uploaded Materials List */}
-            {courseMaterials.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="font-medium text-[#1E293B] flex items-center space-x-2">
-                  <FileText className="h-4 w-4" />
-                  <span>Materials to Upload ({courseMaterials.length})</span>
-                </h4>
-                
-                {courseMaterials.map((material) => (
-                  <div
-                    key={material.id}
-                    className="border border-[#E2E8F0] rounded-lg p-4 space-y-3"
-                  >
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-center space-x-3 flex-1">
-                        {getFileIcon(material.file)}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-[#1E293B] truncate">
-                            {material.file.name}
-                          </p>
-                          <p className="text-sm text-[#64748B]">
-                            {courseMaterialService.formatFileSize(material.file.size)}
-                          </p>
-                        </div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removeMaterial(material.id)}
-                        className="text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+            {/* Upload Progress */}
+            {uploadProgress.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-medium text-[#1E293B] text-sm">Uploading...</h4>
+                {uploadProgress.map((item, index) => (
+                  <div key={index} className="space-y-1">
+                    <div className="flex justify-between text-xs text-[#64748B]">
+                      <span className="truncate">{item.fileName}</span>
+                      <span>{item.progress}%</span>
                     </div>
+                    <div className="w-full bg-[#E2E8F0] rounded-full h-2">
+                      <div 
+                        className="bg-[#1E88E5] h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${item.progress}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div>
-                        <label className="block text-sm font-medium text-[#374151] mb-1">
-                          Title *
-                        </label>
-                        <Input
-                          value={material.title}
-                          onChange={(e) => updateMaterialTitle(material.id, e.target.value)}
-                          placeholder="Enter material title"
-                        />
+            {/* Uploaded Materials List - Grouped by Folder */}
+            {courseMaterials.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-[#1E293B] flex items-center space-x-2">
+                    <FileText className="h-4 w-4" />
+                    <span>Materials to Upload ({courseMaterials.length})</span>
+                  </h4>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      if (confirm('Remove all materials?')) {
+                        setCourseMaterials([]);
+                      }
+                    }}
+                    className="text-red-600 hover:bg-red-50"
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Clear All
+                  </Button>
+                </div>
+
+                {Object.keys(groupedMaterials).map((folderPath) => (
+                  <div key={folderPath} className="space-y-2">
+                    {folderPath !== 'Root' && (
+                      <div className="flex items-center gap-2 text-sm font-medium text-[#1E293B] bg-[#F8FAFC] px-3 py-2 rounded-lg">
+                        <Folder className="h-4 w-4 text-[#1E88E5]" />
+                        <span>{folderPath}</span>
+                        <span className="text-xs text-[#64748B]">
+                          ({groupedMaterials[folderPath].length} files)
+                        </span>
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-[#374151] mb-1">
-                          Description
-                        </label>
-                        <Input
-                          value={material.description}
-                          onChange={(e) => updateMaterialDescription(material.id, e.target.value)}
-                          placeholder="Optional description"
-                        />
-                      </div>
-                    </div>
+                    )}
+                    
+                    {groupedMaterials[folderPath].map((material, index) => {
+                      const materialIndex = courseMaterials.findIndex(m => m.id === material.id);
+                      return (
+                        <div
+                          key={material.id}
+                          className="border border-[#E2E8F0] rounded-lg p-4 space-y-3 bg-white"
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex items-center space-x-3 flex-1">
+                              {getFileIcon(material.file)}
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-[#1E293B] truncate">
+                                  {material.file.name}
+                                </p>
+                                <p className="text-sm text-[#64748B]">
+                                  {courseMaterialService.formatFileSize(material.file.size)}
+                                  {material.folderPath && material.folderPath !== 'Root' && (
+                                    <span className="ml-2 text-xs">
+                                      📁 {material.folderPath}
+                                    </span>
+                                  )}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => reorderMaterial(material.id, 'up')}
+                                disabled={materialIndex === 0}
+                                title="Move up"
+                                className="px-2"
+                              >
+                                <ArrowUpDown className="h-4 w-4 rotate-180" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => reorderMaterial(material.id, 'down')}
+                                disabled={materialIndex === courseMaterials.length - 1}
+                                title="Move down"
+                                className="px-2"
+                              >
+                                <ArrowUpDown className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeMaterial(material.id)}
+                                className="text-red-600 hover:bg-red-50 px-2"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium text-[#374151] mb-1">
+                                Title *
+                              </label>
+                              <Input
+                                value={material.title}
+                                onChange={(e) => updateMaterialTitle(material.id, e.target.value)}
+                                placeholder="Enter material title"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium text-[#374151] mb-1">
+                                Description
+                              </label>
+                              <Input
+                                value={material.description}
+                                onChange={(e) => updateMaterialDescription(material.id, e.target.value)}
+                                placeholder="Optional description"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 ))}
               </div>

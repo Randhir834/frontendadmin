@@ -107,8 +107,7 @@ function CoursesContent() {
 
   const stats = {
     total: courses.length,
-    published: courses.filter(c => c.status === 'published').length,
-    archived: courses.filter(c => c.status === 'archived').length
+    published: courses.filter(c => c.status === 'published').length
   };
 
   return (
@@ -133,7 +132,7 @@ function CoursesContent() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="text-center">
@@ -147,14 +146,6 @@ function CoursesContent() {
             <div className="text-center">
               <div className="text-2xl font-bold text-[#1E88E5]">{stats.published}</div>
               <div className="text-sm text-[#64748B]">Published</div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-[#64748B]">{stats.archived}</div>
-              <div className="text-sm text-[#64748B]">Archived</div>
             </div>
           </CardContent>
         </Card>

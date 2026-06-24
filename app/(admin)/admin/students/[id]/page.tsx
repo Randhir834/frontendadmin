@@ -2,383 +2,428 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import api from '@/services/api';
 import { 
-  Mail, Calendar, Badge, User, Loader2, AlertCircle, Phone, MapPin, 
-  GraduationCap, Award, Users, BookOpen, Edit, Trash2
+  GraduationCap,
+  BookOpen,
+  Video,
+  CheckCircle,
+  Calendar,
+  Clock,
+  Mail,
+  Phone,
+  MapPin,
+  School,
+  User,
+  Loader2,
+  ExternalLink
 } from 'lucide-react';
-import Button from '@/components/ui/Button';
-import EditUserModal from '@/components/EditUserModal';
-import RealTimeNotification from '@/components/RealTimeNotification';
-import { adminService } from '@/services/adminService';
-import { useRealTimeUpdates } from '@/hooks/useRealTimeUpdates';
-import { useNotifications } from '@/hooks/useNotifications';
-import type { User as UserType } from '@/types';
 
-export default function StudentProfilePage() {
+interface LiveClass {
+  id: number;
+  title: string;
+  description?: string;
+  meet_link: string;
+  scheduled_at: string;
+  duration_minutes: number;
+  status: string;
+  created_by_name: string;
+}
+
+interface Enrollment {
+  enrollment_id: number;
+  course_id: number;
+  course_title: string;
+  course_description: string;
+  thumbnail_url?: string;
+  enrollment_status: string;
+  enrolled_at: string;
+  completed_at?: string;
+  total_lessons: number;
+  manual_completed_lessons: number;
+  completed_lessons: number;
+  progress_percentage: number;
+  live_classes: LiveClass[];
+  total_live_classes: number;
+  level?: string;
+  duration_value?: number;
+  duration_unit?: string;
+}
+
+interface StudentData {
+  student: {
+    id: number;
+    name: string;
+    email: string;
+    phone?: string;
+    avatar_url?: string;
+    date_of_birth?: string;
+    age?: number;
+    school?: string;
+    grade?: string;
+    parent_guardian_name?: string;
+    location?: string;
+    created_at: string;
+  };
+  enrollments: Enrollment[];
+  statistics: {
+    total_enrollments: number;
+    total_live_classes_scheduled: number;
+    total_lessons_completed: number;
+    total_lessons: number;
+    overall_progress_percentage: number;
+  };
+}
+
+export default function StudentDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const userId = parseInt((params?.id as string) || "0");
-  
-  const [user, setUser] = useState<UserType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
-  
-  const { notifications, addNotification, removeNotification } = useNotifications();
+  const studentId = params.id as string;
 
-  // Set up real-time updates for admin
-  useRealTimeUpdates({
-    isAdmin: true,
-    onUserUpdate: (data) => {
-      // Update the user if it's the same user being viewed
-      if (data.user && data.user.id === userId) {
-        console.log('[StudentProfile] Received real-time update for current user');
-        setUser(data.user);
-        addNotification('Profile updated in real-time!', 'success');
-      }
-    }
-  });
+  const [data, setData] = useState<StudentData | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        setLoading(true);
-        const data = await adminService.getUserById(userId);
-        setUser(data.user);
-        setError(null);
-      } catch (err) {
-        setError('Failed to load user details');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userId) {
-      fetchUser();
+    if (studentId) {
+      fetchStudentData();
     }
-  }, [userId]);
+  }, [studentId]);
 
-  const getRoleColor = (userRole: string) => {
-    switch (userRole) {
-      case 'student':
-        return 'bg-blue-50 text-blue-700 border-blue-200';
-      case 'instructor':
-        return 'bg-purple-50 text-purple-700 border-purple-200';
-      case 'admin':
-        return 'bg-red-50 text-red-700 border-red-200';
-      default:
-        return 'bg-gray-50 text-gray-700 border-gray-200';
-    }
-  };
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
-
-  const formatDateOnly = (date: string) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const getAge = (dateOfBirth: string) => {
-    const today = new Date();
-    const birthDate = new Date(dateOfBirth);
-    let age = today.getFullYear() - birthDate.getFullYear();
-    const monthDiff = today.getMonth() - birthDate.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-      age--;
-    }
-    return age;
-  };
-
-  const handleEditProfile = () => {
-    setShowEditModal(true);
-  };
-
-  const handleUserUpdated = (updatedUser: UserType) => {
-    setUser(updatedUser);
-  };
-
-  const handleDeleteUser = async () => {
-    if (!user) return;
-    
+  const fetchStudentData = async () => {
     try {
-      setDeleting(true);
-      await adminService.deleteUser(user.id);
-      
-      // Show success message and redirect
-      alert('Student deleted successfully!');
-      router.push('/admin/students');
+      setLoading(true);
+      const res = await api.get(`/admin/students/${studentId}/stats`);
+      setData(res.data);
     } catch (error) {
-      console.error('Failed to delete student:', error);
-      alert('Failed to delete student. Please try again.');
+      console.error('Failed to fetch student data:', error);
     } finally {
-      setDeleting(false);
-      setShowDeleteConfirm(false);
-    }
-  };
-
-  const confirmDelete = () => {
-    if (!user) return;
-    
-    const confirmed = window.confirm(
-      `Are you sure you want to delete ${user.name}? This action cannot be undone.`
-    );
-    
-    if (confirmed) {
-      handleDeleteUser();
+      setLoading(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <Loader2 size={40} className="text-primary-500 animate-spin" />
-          <p className="text-gray-600">Loading student profile...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin text-[#6366F1]" />
       </div>
     );
   }
 
-  if (error || !user) {
+  if (!data) {
     return (
-      <div className="p-4 sm:p-6 lg:p-8">
-        <div className="flex flex-col items-center justify-center py-20 gap-4 text-center">
-          <AlertCircle size={40} className="text-red-500" />
-          <p className="text-red-600 font-medium">{error || 'Student not found'}</p>
-          <Button variant="outline" onClick={() => router.back()}>
-            Go Back
-          </Button>
-        </div>
+      <div className="p-8 text-center">
+        <p className="text-[#64748B]">Student not found</p>
       </div>
     );
   }
+
+  const { student, enrollments, statistics } = data;
 
   return (
-    <div className="p-4 sm:p-6 lg:p-8 space-y-8">
+    <div className="p-4 sm:p-6 lg:p-8 space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-xl sm:text-2xl font-bold text-[#1E293B]">Student Details</h1>
+        <p className="text-sm text-[#64748B] mt-1">
+          Comprehensive overview of student progress and enrollments
+        </p>
+      </div>
 
-      {/* Profile Header */}
-      <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-2xl p-8">
-        <div className="flex flex-col md:flex-row items-start gap-8">
-          {user.avatar_url ? (
-            <img 
-              src={user.avatar_url.startsWith('http') ? user.avatar_url : `http://localhost:5001${user.avatar_url}`}
-              alt={user.name}
-              className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-              key={user.avatar_url} // Force re-render when avatar changes
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white font-bold text-3xl shadow-lg">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-          )}
-          
-          <div className="flex-1">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">{user.name}</h2>
-            <p className="text-gray-600 mb-4 text-lg">{user.email}</p>
-            
-            {/* Role Badge */}
-            <span
-              className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold border ${getRoleColor(user.role)}`}
-            >
-              <Badge size={16} />
-              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-            </span>
+      {/* Student Profile Card */}
+      <div className="bg-white rounded-xl border border-[#E2E8F0] p-6">
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Avatar */}
+          <div className="flex-shrink-0">
+            {student.avatar_url ? (
+              <img
+                src={student.avatar_url}
+                alt={student.name}
+                className="w-24 h-24 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-[#6366F1] flex items-center justify-center">
+                <span className="text-white text-3xl font-bold">
+                  {student.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
           </div>
 
-          <div className="flex gap-3">
-            <Button 
-              variant="primary" 
-              className="flex items-center gap-2"
-              onClick={handleEditProfile}
-            >
-              <Edit size={16} />
-              Edit Profile
-            </Button>
-            <Button 
-              variant="ghost" 
-              className="text-red-600 hover:bg-red-50 flex items-center gap-2"
-              onClick={confirmDelete}
-              disabled={deleting}
-            >
-              <Trash2 size={16} />
-              {deleting ? 'Deleting...' : 'Delete'}
-            </Button>
+          {/* Student Info */}
+          <div className="flex-grow space-y-4">
+            <div>
+              <h2 className="text-2xl font-bold text-[#1E293B]">{student.name}</h2>
+              <p className="text-[#64748B] text-sm mt-1">
+                Member since {new Date(student.created_at).toLocaleDateString()}
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {student.email && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Mail className="w-4 h-4 text-[#64748B]" />
+                  <span className="text-[#1E293B]">{student.email}</span>
+                </div>
+              )}
+              {student.phone && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Phone className="w-4 h-4 text-[#64748B]" />
+                  <span className="text-[#1E293B]">{student.phone}</span>
+                </div>
+              )}
+              {student.location && (
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin className="w-4 h-4 text-[#64748B]" />
+                  <span className="text-[#1E293B]">{student.location}</span>
+                </div>
+              )}
+              {student.school && (
+                <div className="flex items-center gap-2 text-sm">
+                  <School className="w-4 h-4 text-[#64748B]" />
+                  <span className="text-[#1E293B]">{student.school}</span>
+                </div>
+              )}
+              {student.grade && (
+                <div className="flex items-center gap-2 text-sm">
+                  <GraduationCap className="w-4 h-4 text-[#64748B]" />
+                  <span className="text-[#1E293B]">Grade {student.grade}</span>
+                </div>
+              )}
+              {student.age && (
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="w-4 h-4 text-[#64748B]" />
+                  <span className="text-[#1E293B]">{student.age} years old</span>
+                </div>
+              )}
+            </div>
+
+            {student.parent_guardian_name && (
+              <div className="pt-4 border-t border-[#E2E8F0]">
+                <p className="text-sm text-[#64748B]">
+                  Parent/Guardian: <span className="text-[#1E293B] font-medium">{student.parent_guardian_name}</span>
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Personal Information */}
-      <div className="space-y-6">
-        <h3 className="text-xl font-semibold text-gray-900">Personal Information</h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {/* User ID */}
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <User size={20} className="text-gray-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-1">User ID</p>
-                <p className="text-lg font-semibold text-gray-900">#{user.id}</p>
-              </div>
+      {/* Overall Statistics */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-white rounded-xl p-6 border border-[#E2E8F0]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[#64748B]">Total Enrollments</p>
+              <p className="text-2xl font-bold text-[#1E293B] mt-1">
+                {statistics.total_enrollments}
+              </p>
+            </div>
+            <div className="bg-[#DBEAFE] p-3 rounded-lg">
+              <BookOpen className="w-6 h-6 text-[#3B82F6]" />
             </div>
           </div>
+        </div>
 
-          {/* Email */}
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Mail size={20} className="text-blue-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-1">Email Address</p>
-                <p className="text-lg font-semibold text-gray-900 break-all">{user.email}</p>
-              </div>
+        <div className="bg-white rounded-xl p-6 border border-[#E2E8F0]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[#64748B]">Live Classes</p>
+              <p className="text-2xl font-bold text-[#1E293B] mt-1">
+                {statistics.total_live_classes_scheduled}
+              </p>
+            </div>
+            <div className="bg-[#FEF3C7] p-3 rounded-lg">
+              <Video className="w-6 h-6 text-[#F59E0B]" />
             </div>
           </div>
+        </div>
 
-          {/* Grade */}
-          {user.grade && (
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <GraduationCap size={20} className="text-blue-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-1">Grade Level</p>
-                  <p className="text-lg font-semibold text-gray-900">{user.grade}</p>
-                </div>
-              </div>
+        <div className="bg-white rounded-xl p-6 border border-[#E2E8F0]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[#64748B]">Lessons Completed</p>
+              <p className="text-2xl font-bold text-[#1E293B] mt-1">
+                {statistics.total_lessons_completed}/{statistics.total_lessons}
+              </p>
             </div>
-          )}
-
-          {/* School */}
-          {user.school && (
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <BookOpen size={20} className="text-green-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-1">School</p>
-                  <p className="text-lg font-semibold text-gray-900">{user.school}</p>
-                </div>
-              </div>
+            <div className="bg-[#D1FAE5] p-3 rounded-lg">
+              <CheckCircle className="w-6 h-6 text-[#10B981]" />
             </div>
-          )}
+          </div>
+        </div>
 
-          {/* Parent/Guardian */}
-          {user.parent_guardian_name && (
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="p-2 bg-orange-100 rounded-lg">
-                  <Users size={20} className="text-orange-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-1">Parent/Guardian</p>
-                  <p className="text-lg font-semibold text-gray-900">{user.parent_guardian_name}</p>
-                </div>
-              </div>
+        <div className="bg-white rounded-xl p-6 border border-[#E2E8F0]">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-sm text-[#64748B]">Overall Progress</p>
+              <p className="text-2xl font-bold text-[#1E293B] mt-1">
+                {statistics.overall_progress_percentage}%
+              </p>
             </div>
-          )}
-
-          {/* Phone */}
-          {user.phone && (
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="p-2 bg-emerald-100 rounded-lg">
-                  <Phone size={20} className="text-emerald-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-1">Phone Number</p>
-                  <p className="text-lg font-semibold text-gray-900">{user.phone}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Location */}
-          {user.location && (
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <MapPin size={20} className="text-red-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-1">Location</p>
-                  <p className="text-lg font-semibold text-gray-900">{user.location}</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Date of Birth */}
-          {user.date_of_birth && (
-            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-              <div className="flex items-start gap-4">
-                <div className="p-2 bg-pink-100 rounded-lg">
-                  <Calendar size={20} className="text-pink-600" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-1">Date of Birth</p>
-                  <p className="text-lg font-semibold text-gray-900">
-                    {formatDateOnly(user.date_of_birth)} ({user.age !== undefined ? user.age : getAge(user.date_of_birth)} years old)
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Member Since */}
-          <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-            <div className="flex items-start gap-4">
-              <div className="p-2 bg-gray-100 rounded-lg">
-                <Calendar size={20} className="text-gray-600" />
-              </div>
-              <div className="flex-1">
-                <p className="text-sm text-gray-500 uppercase tracking-wide font-medium mb-1">Member Since</p>
-                <p className="text-lg font-semibold text-gray-900">{formatDate(user.created_at)}</p>
-              </div>
+            <div className="bg-[#F1F5F9] p-3 rounded-lg">
+              <GraduationCap className="w-6 h-6 text-[#6366F1]" />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Edit Modal */}
-      {user && (
-        <EditUserModal
-          user={user}
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          onUserUpdated={handleUserUpdated}
-        />
-      )}
+      {/* Course Enrollments */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-[#1E293B]">Course Enrollments & Progress</h2>
+        
+        {enrollments.length === 0 ? (
+          <div className="bg-white rounded-xl border border-[#E2E8F0] p-12 text-center">
+            <BookOpen className="w-12 h-12 text-[#CBD5E1] mx-auto mb-3" />
+            <p className="text-[#64748B]">No course enrollments yet</p>
+          </div>
+        ) : (
+          enrollments.map((enrollment) => (
+            <div key={enrollment.enrollment_id} className="bg-white rounded-xl border border-[#E2E8F0] overflow-hidden">
+              {/* Course Header */}
+              <div className="p-6 border-b border-[#E2E8F0]">
+                <div className="flex flex-col md:flex-row gap-4">
+                  {enrollment.thumbnail_url && (
+                    <img
+                      src={enrollment.thumbnail_url}
+                      alt={enrollment.course_title}
+                      className="w-full md:w-32 h-32 object-cover rounded-lg"
+                    />
+                  )}
+                  <div className="flex-grow">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-bold text-[#1E293B]">{enrollment.course_title}</h3>
+                        <p className="text-sm text-[#64748B] mt-1">{enrollment.course_description}</p>
+                      </div>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                        enrollment.enrollment_status === 'completed'
+                          ? 'bg-[#D1FAE5] text-[#065F46]'
+                          : 'bg-[#DBEAFE] text-[#1E40AF]'
+                      }`}>
+                        {enrollment.enrollment_status}
+                      </span>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-4 mt-4 text-sm text-[#64748B]">
+                      <span>Enrolled: {new Date(enrollment.enrolled_at).toLocaleDateString()}</span>
+                      {enrollment.level && <span>Level: {enrollment.level}</span>}
+                      {enrollment.duration_value && enrollment.duration_unit && (
+                        <span>Duration: {enrollment.duration_value} {enrollment.duration_unit}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-      {/* Real-time Notifications */}
-      {notifications.map((notification) => (
-        <RealTimeNotification
-          key={notification.id}
-          message={notification.message}
-          type={notification.type}
-          duration={notification.duration}
-          onClose={() => removeNotification(notification.id)}
-        />
-      ))}
+              {/* Progress Section */}
+              <div className="p-6 bg-[#F8FAFC]">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Lesson Progress */}
+                  <div>
+                    <p className="text-sm font-medium text-[#64748B] mb-2">Lesson Progress</p>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-[#1E293B]">
+                          {enrollment.completed_lessons} / {enrollment.total_lessons} lessons
+                        </span>
+                        <span className="text-sm font-medium text-[#6366F1]">
+                          {enrollment.progress_percentage}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-[#E2E8F0] rounded-full h-2">
+                        <div
+                          className="bg-[#6366F1] h-2 rounded-full transition-all"
+                          style={{ width: `${enrollment.progress_percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Classes */}
+                  <div>
+                    <p className="text-sm font-medium text-[#64748B] mb-2">Live Classes Scheduled</p>
+                    <div className="flex items-center gap-2">
+                      <Video className="w-5 h-5 text-[#F59E0B]" />
+                      <span className="text-2xl font-bold text-[#1E293B]">
+                        {enrollment.total_live_classes}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Completion Status */}
+                  <div>
+                    <p className="text-sm font-medium text-[#64748B] mb-2">Status</p>
+                    {enrollment.completed_at ? (
+                      <div className="flex items-center gap-2">
+                        <CheckCircle className="w-5 h-5 text-[#10B981]" />
+                        <span className="text-sm text-[#1E293B]">
+                          Completed on {new Date(enrollment.completed_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-5 h-5 text-[#3B82F6]" />
+                        <span className="text-sm text-[#1E293B]">In Progress</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Live Classes List */}
+              {enrollment.live_classes.length > 0 && (
+                <div className="p-6 border-t border-[#E2E8F0]">
+                  <h4 className="font-medium text-[#1E293B] mb-4">Scheduled Live Classes</h4>
+                  <div className="space-y-3">
+                    {enrollment.live_classes.map((liveClass) => (
+                      <div
+                        key={liveClass.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-[#F8FAFC] rounded-lg border border-[#E2E8F0]"
+                      >
+                        <div className="flex-grow">
+                          <h5 className="font-medium text-[#1E293B]">{liveClass.title}</h5>
+                          <div className="flex flex-wrap items-center gap-3 mt-2 text-xs text-[#64748B]">
+                            <span className="flex items-center gap-1">
+                              <Calendar className="w-3 h-3" />
+                              {new Date(liveClass.scheduled_at).toLocaleDateString()}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              {new Date(liveClass.scheduled_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                            <span>{liveClass.duration_minutes} min</span>
+                            <span>By: {liveClass.created_by_name}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded text-xs font-medium ${
+                            liveClass.status === 'completed'
+                              ? 'bg-[#D1FAE5] text-[#065F46]'
+                              : liveClass.status === 'cancelled'
+                              ? 'bg-[#FEE2E2] text-[#991B1B]'
+                              : 'bg-[#DBEAFE] text-[#1E40AF]'
+                          }`}>
+                            {liveClass.status}
+                          </span>
+                          <a
+                            href={liveClass.meet_link}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2 hover:bg-[#E2E8F0] rounded transition-colors"
+                            title="Open Meet Link"
+                          >
+                            <ExternalLink className="w-4 h-4 text-[#6366F1]" />
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }

@@ -48,9 +48,12 @@ export default function Navigation() {
   if (!user) return null;
 
   const adminNavItems = [
+    { href: '/admin', icon: Home, label: 'Dashboard' },
     { href: '/admin/courses', icon: BookOpen, label: 'Courses' },
-    { href: '/admin/users', icon: Users, label: 'Users' },
-    { href: '/admin/settings', icon: Settings, label: 'Settings' },
+    { href: '/admin/students', icon: GraduationCap, label: 'Students' },
+    { href: '/admin/instructors', icon: UserCheck, label: 'Instructors' },
+    { href: '/admin/admins', icon: Shield, label: 'Admins' },
+    { href: '/admin/users', icon: Users, label: 'All Users' },
   ];
 
   const instructorNavItems = [

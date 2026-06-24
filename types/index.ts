@@ -56,6 +56,7 @@ export interface Course {
   total_sections?: number;
   is_enrolled?: boolean;
   progress?: number;
+  google_meet_link?: string;
   created_at: string;
   updated_at: string;
 }
@@ -195,24 +196,6 @@ export interface QuizAnswer {
   created_at: string;
 }
 
-export interface LiveClass {
-  id: number;
-  course_id: number;
-  title: string;
-  description?: string;
-  meet_link: string;
-  scheduled_at: string;
-  duration_minutes: number;
-  status: 'scheduled' | 'ongoing' | 'completed' | 'cancelled';
-  course_title?: string;
-  instructor_name?: string;
-  instructor_id?: number;
-  thumbnail_url?: string;
-  enrolled_count?: number;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface FilterOption {
   id: number;
   name?: string;
@@ -239,22 +222,6 @@ export interface LessonProgress {
   section_title?: string;
   created_at: string;
   updated_at: string;
-}
-
-export interface Attendance {
-  id: number;
-  course_id: number;
-  student_id: number;
-  instructor_id: number;
-  date: string;
-  status: 'present' | 'absent' | 'late';
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-  course_title?: string;
-  student_name?: string;
-  student_email?: string;
-  instructor_name?: string;
 }
 
 export interface CourseProgressSummary {

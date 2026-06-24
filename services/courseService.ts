@@ -13,6 +13,7 @@ export interface CreateCourseData {
   language?: string;
   what_you_learn?: string;
   requirements?: string;
+  total_lessons?: number;
   instructor_ids?: number[];
 }
 

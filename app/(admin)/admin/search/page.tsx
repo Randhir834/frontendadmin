@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, BookOpen, FileText, ClipboardList, HelpCircle, Video, FolderOpen, Users, Loader2 } from 'lucide-react';
+import { Search, BookOpen, FileText, ClipboardList, HelpCircle, FolderOpen, Users, Loader2 } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { searchService } from '@/services/searchService';
 import type { SearchResults } from '@/services/searchService';
@@ -204,32 +204,6 @@ function SearchResultsContent() {
                             <p className="text-xs text-muted">
                               Course: {quiz.course_title}
                               {quiz.time_limit && ` • Time: ${quiz.time_limit} min`}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      </Link>
-                    ))}
-                  </div>
-                </section>
-              )}
-
-              {/* Live Classes */}
-              {results.liveClasses && results.liveClasses.length > 0 && (
-                <section>
-                  <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-                    <Video className="h-5 w-5 text-primary" />
-                    Live Classes ({results.liveClasses.length})
-                  </h2>
-                  <div className="space-y-3">
-                    {results.liveClasses.map((liveClass: any) => (
-                      <Link key={liveClass.id} href={`/admin/live-class-management`}>
-                        <Card className="hover:shadow-md transition-shadow cursor-pointer">
-                          <CardContent className="p-4">
-                            <h3 className="font-semibold text-foreground mb-1">{liveClass.title}</h3>
-                            <p className="text-sm text-muted mb-2">{liveClass.description}</p>
-                            <p className="text-xs text-muted">
-                              Course: {liveClass.course_title}
-                              {liveClass.scheduled_at && ` • ${new Date(liveClass.scheduled_at).toLocaleString()}`}
                             </p>
                           </CardContent>
                         </Card>

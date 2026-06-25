@@ -25,10 +25,14 @@ export function useAuth() {
             const userData = JSON.parse(storedUser);
             setUser(userData);
             setIsAuthenticated(true);
+            // Set auth session if user is already logged in
+            sessionStorage.setItem('auth_session', 'active');
           } catch (parseError) {
             // Invalid stored user data - clear it
             localStorage.removeItem('user');
             localStorage.removeItem('token');
+            localStorage.removeItem('sessionToken');
+            sessionStorage.removeItem('auth_session');
             setUser(null);
             setIsAuthenticated(false);
           }
@@ -48,9 +52,14 @@ export function useAuth() {
     initAuth();
   }, []);
 
-  const login = useCallback((userData: User, token: string) => {
+  const login = useCallback((userData: User, token: string, sessionToken?: string) => {
     localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
+    if (sessionToken) {
+      localStorage.setItem('sessionToken', sessionToken);
+    }
+    // Set auth session to prevent redirect loops
+    sessionStorage.setItem('auth_session', 'active');
     setUser(userData);
     setIsAuthenticated(true);
   }, []);
@@ -58,6 +67,8 @@ export function useAuth() {
   const logout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('sessionToken');
+    sessionStorage.removeItem('auth_session');
     setUser(null);
     setIsAuthenticated(false);
   }, []);

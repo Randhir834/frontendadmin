@@ -17,17 +17,43 @@ export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
 
-  // Clear any stale tokens on mount (logout redirect)
+  // Redirect if already authenticated and clear logout flag
   useEffect(() => {
+    // Clear logout flag if present
+    sessionStorage.removeItem('logout_initiated');
+    
+    // Clear any stale tokens on logout redirect
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.has('logout') || urlParams.has('session_expired')) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        localStorage.removeItem('sessionToken');
         sessionStorage.removeItem('auth_session');
       }
     }
-  }, []);
+    
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (token && user) {
+      try {
+        const userData = JSON.parse(user);
+        if (userData.role === 'admin') {
+          // Set auth session to prevent redirect loop
+          sessionStorage.setItem('auth_session', 'active');
+          router.replace('/dashboard');
+          return;
+        }
+      } catch {
+        // Invalid user data, clear it
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('sessionToken');
+        sessionStorage.removeItem('auth_session');
+      }
+    }
+  }, [router]);
 
   // Detect if the input is email or phone
   const isEmail = identifier.includes('@');
@@ -46,8 +72,10 @@ export default function LoginPage() {
         throw new Error('Invalid response from server');
       }
       
-      login(data.user, data.token);
-      router.push('/dashboard');
+      login(data.user, data.token, data.sessionToken);
+      
+      // Use replace to prevent back navigation to login page after successful login
+      router.replace('/dashboard');
     } catch (err: unknown) {
       logTechnicalError('Admin Login', err);
       const message = getUserFriendlyError(err);

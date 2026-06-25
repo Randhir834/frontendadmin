@@ -50,9 +50,30 @@ export const userService = {
 
   logout: () => {
     if (typeof window !== 'undefined') {
+      // Clear all authentication data
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      window.location.href = '/login';
+      localStorage.removeItem('sessionToken');
+      sessionStorage.removeItem('auth_session');
+      
+      // Set logout flag to prevent bfcache access
+      sessionStorage.setItem('logout_initiated', 'true');
+      
+      // Clear any cached data
+      if ('caches' in window) {
+        caches.keys().then((names) => {
+          names.forEach((name) => {
+            caches.delete(name);
+          });
+        });
+      }
+      
+      // Dispatch custom event for other components
+      window.dispatchEvent(new Event('auth:logout'));
+      
+      // Use window.location.href with cache-busting to force full page reload
+      // This prevents bfcache from restoring the previous page
+      window.location.href = `/login?logout=${Date.now()}`;
     }
   },
 };

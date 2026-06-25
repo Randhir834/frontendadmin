@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import NavigationLoaderProvider from "@/providers/NavigationLoaderProvider";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -36,6 +37,7 @@ export default function RootLayout({
       data-scroll-behavior="smooth"
     >
       <body className="min-h-full flex flex-col bg-[#F7FAFC]">
+        <NavigationLoaderProvider />
         {children}
       </body>
     </html>

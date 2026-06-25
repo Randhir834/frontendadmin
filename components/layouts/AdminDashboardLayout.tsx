@@ -10,7 +10,6 @@ import {
 } from 'lucide-react';
 import { userService, UserProfile } from '@/services/userService';
 import GlobalSearch from '@/components/GlobalSearch';
-import PageTransition from '@/components/PageTransition';
 
 const menuItems = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -206,11 +205,9 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
           </div>
         </header>
 
-        {/* Page Content with Transition */}
+        {/* Page Content */}
         <main className="flex-1 relative">
-          <PageTransition>
-            {children}
-          </PageTransition>
+          {children}
         </main>
       </div>
     </div>

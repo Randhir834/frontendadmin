@@ -175,7 +175,7 @@ function SidebarLayoutContent({ children, items, title = 'PlayFit', searchPlaceh
 
 export default function SidebarLayout(props: SidebarLayoutProps) {
   return (
-    <Suspense fallback={<div className="flex-1 bg-background" />}>
+    <Suspense fallback={null}>
       <SidebarLayoutContent {...props} />
     </Suspense>
   );

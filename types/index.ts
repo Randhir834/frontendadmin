@@ -101,15 +101,29 @@ export interface Enrollment {
 export interface Payment {
   id: number;
   user_id: number;
-  enrollment_id: number;
+  course_id: number;
+  enrollment_id?: number;
   amount: number;
-  payment_method: string;
-  transaction_id?: string;
+  currency: string;
+  payment_method?: string;
+  razorpay_order_id?: string;
+  razorpay_payment_id?: string;
+  razorpay_signature?: string;
   status: 'pending' | 'completed' | 'failed' | 'refunded';
   paid_at?: string;
   course_title?: string;
+  course_thumbnail?: string;
+  student_name?: string;
+  student_email?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface PaymentStats {
+  successful_payments: number;
+  failed_payments: number;
+  total_payments: number;
+  total_revenue: number;
 }
 
 export interface Assignment {

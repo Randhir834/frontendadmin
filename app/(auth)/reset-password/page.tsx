@@ -119,7 +119,7 @@ export default function ResetPasswordPage() {
       }
       leftSubtitle="Choose a strong password for your administrator account."
     >
-      <Suspense fallback={<p className="text-center text-sm text-text-muted">Loading…</p>}>
+      <Suspense fallback={null}>
         <ResetPasswordForm />
       </Suspense>
     </AdminAuthSplitShell>

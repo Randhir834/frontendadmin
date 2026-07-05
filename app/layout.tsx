@@ -19,9 +19,9 @@ export const metadata: Metadata = {
   title: "PlayFit Admin",
   description: "PlayFit Admin - Interactive Learning Platform Administration Portal",
   icons: {
-    icon: "/images/navbarlogo.png",
-    shortcut: "/images/navbarlogo.png",
-    apple: "/images/navbarlogo.png",
+    icon: "/logo.jpg",
+    shortcut: "/logo.jpg",
+    apple: "/logo.jpg",
   },
 };
 

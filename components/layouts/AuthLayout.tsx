@@ -11,7 +11,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
         <div className="text-center mb-6 sm:mb-8">
           <Link href="/" className="inline-block">
             <img
-              src="/images/navbarlogo.png"
+              src="/logo.jpg"
               alt="PlayFit"
               className="h-12 w-auto mx-auto"
             />

@@ -14,7 +14,7 @@ export default function AdminAuthSplitShell({ leftTitle, leftSubtitle, centered 
       {/* Mobile-only branding */}
       <div className="md:hidden bg-[#1E88E5] px-6 py-8 text-center">
         <img
-          src="/images/navbarlogo.png"
+          src="/logo.jpg"
           alt="PlayFit"
           className="h-12 w-auto mx-auto mb-2"
         />

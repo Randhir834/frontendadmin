@@ -105,7 +105,7 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
         <div className="relative flex items-center justify-center px-4 py-5 shrink-0">
           <Link href="/admin" className="relative flex items-center justify-center shrink-0 transition-all duration-300 w-full h-14 sm:h-16 lg:h-16 xl:h-20">
             <img
-              src="/images/navbarlogo.png"
+              src="/logo.jpg"
               alt="PlayFit LMS"
               className="w-full h-full object-contain max-w-full max-h-full"
             />

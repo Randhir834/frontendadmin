@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { 
   MessageSquare, 
   Star, 
@@ -11,7 +12,8 @@ import {
   Eye,
   Trash2,
   Filter,
-  TrendingUp
+  TrendingUp,
+  AlertCircle
 } from 'lucide-react';
 import {
   getAllReviews,
@@ -26,6 +28,7 @@ import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 
 export default function ReviewsManagementPage() {
+  const router = useRouter();
   const [reviews, setReviews] = useState<Review[]>([]);
   const [stats, setStats] = useState<ReviewStats | null>(null);
   const [ratingDistribution, setRatingDistribution] = useState<RatingDistribution[]>([]);
@@ -37,11 +40,48 @@ export default function ReviewsManagementPage() {
   const [rejectNotes, setRejectNotes] = useState('');
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [reviewToReject, setReviewToReject] = useState<Review | null>(null);
+  const [authError, setAuthError] = useState(false);
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      
+      console.log('[Reviews] Auth check - Token exists:', !!token);
+      console.log('[Reviews] Auth check - User exists:', !!user);
+      
+      if (!token) {
+        console.error('[Reviews] No authentication token found');
+        setAuthError(true);
+        toast.error('Please login to access this page');
+        setTimeout(() => router.push('/login'), 2000);
+        return;
+      }
+      
+      try {
+        const userData = user ? JSON.parse(user) : null;
+        console.log('[Reviews] User role:', userData?.role);
+        
+        if (userData?.role !== 'admin') {
+          console.error('[Reviews] User is not an admin');
+          setAuthError(true);
+          toast.error('Access denied. Admin privileges required.');
+          setTimeout(() => router.push('/admin'), 2000);
+          return;
+        }
+      } catch (error) {
+        console.error('[Reviews] Error parsing user data:', error);
+      }
+    }
+  }, [router]);
 
   useEffect(() => {
-    fetchReviews();
-    fetchStats();
-  }, [selectedStatus]);
+    if (!authError) {
+      fetchReviews();
+      fetchStats();
+    }
+  }, [selectedStatus, authError]);
 
   useEffect(() => {
     // Connect to Socket.IO for real-time updates
@@ -79,16 +119,26 @@ export default function ReviewsManagementPage() {
   const fetchReviews = async () => {
     try {
       setLoading(true);
+      console.log('[Reviews] Fetching reviews with status:', selectedStatus);
+      
+      let data;
       if (selectedStatus === 'all') {
-        const data = await getAllReviews({ limit: 100 });
-        setReviews(data.reviews);
+        data = await getAllReviews({ limit: 100 });
       } else {
-        const data = await getAllReviews({ status: selectedStatus, limit: 100 });
-        setReviews(data.reviews);
+        data = await getAllReviews({ status: selectedStatus, limit: 100 });
       }
-    } catch (error) {
-      console.error('Failed to fetch reviews:', error);
-      toast.error('Failed to load reviews');
+      
+      console.log('[Reviews] Received data:', data);
+      setReviews(data.reviews || []);
+    } catch (error: any) {
+      console.error('[Reviews] Failed to fetch reviews:', error);
+      console.error('[Reviews] Error response:', error.response?.data);
+      
+      if (error.response?.status === 401) {
+        toast.error('Session expired. Please login again.');
+      } else {
+        toast.error(error.response?.data?.error || 'Failed to load reviews');
+      }
     } finally {
       setLoading(false);
     }
@@ -96,11 +146,14 @@ export default function ReviewsManagementPage() {
 
   const fetchStats = async () => {
     try {
+      console.log('[Reviews] Fetching stats...');
       const data = await getReviewStats();
+      console.log('[Reviews] Stats received:', data);
       setStats(data.stats);
       setRatingDistribution(data.ratingDistribution);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
+    } catch (error: any) {
+      console.error('[Reviews] Failed to fetch stats:', error);
+      console.error('[Reviews] Error response:', error.response?.data);
     }
   };
 
@@ -229,6 +282,21 @@ export default function ReviewsManagementPage() {
             Moderate and manage student and parent reviews
           </p>
         </div>
+
+        {/* Authentication Error */}
+        {authError && (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-6 h-6 text-red-600" />
+              <div>
+                <h3 className="font-semibold text-red-900">Authentication Required</h3>
+                <p className="text-red-700 text-sm">
+                  Please login as an admin to access this page. Redirecting...
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Cards */}
         {stats && (

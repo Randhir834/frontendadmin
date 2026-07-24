@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Loader2, Menu, X, LogOut,
+  Bell, Mail, Loader2, Menu, X, LogOut,
   LayoutDashboard, GraduationCap, Users, BookOpen, PlusCircle,
   CreditCard, FileText, BarChart3, User as UserIcon, LucideIcon
 } from 'lucide-react';
@@ -75,15 +75,6 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
 
   return (
     <div className="min-h-screen bg-[#F5F5F5] flex">
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
@@ -101,18 +92,18 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
           w-64 lg:w-[12.5rem]
         `}
       >
-        {/* Logo Section */}
-        <div className="relative flex items-center justify-center px-4 py-5 shrink-0">
-          <Link href="/admin" className="relative flex items-center justify-center shrink-0 transition-all duration-300 w-full h-14 sm:h-16 lg:h-16 xl:h-20">
+        {/* Logo */}
+        <div className="relative border-b border-[#E0E0E0] lg:border-none flex items-center justify-center px-3 py-4 sm:px-4 sm:py-5 lg:px-5 lg:py-6 shrink-0">
+          <div className="relative flex items-center justify-center shrink-0 transition-all duration-300 w-full h-12 sm:h-14 md:h-16 lg:h-20">
             <img
               src="/logo.jpg"
-              alt="PlayFit LMS"
+              alt="PlayFit"
               className="w-full h-full object-contain max-w-full max-h-full"
             />
-          </Link>
+          </div>
           <button
             onClick={() => setMobileOpen(false)}
-            className="absolute right-3 top-4 lg:hidden p-2 rounded-lg hover:bg-[#FAFAFA] text-[#78909C] transition-colors"
+            className="absolute right-4 top-4 lg:hidden p-1.5 rounded-md hover:bg-[#FAFAFA] text-[#78909C]"
           >
             <X size={20} />
           </button>
@@ -120,7 +111,7 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
 
         <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
           {/* Navigation */}
-          <nav className="px-2 sm:px-3 lg:px-3 py-4 space-y-0.5 lg:space-y-1">
+          <nav className="px-2 sm:px-3 lg:px-3 space-y-0.5 lg:space-y-1">
             {menuItems.map((item, index) => {
               const isActive = item.href === '/admin'
                 ? pathname === '/admin'
@@ -166,6 +157,15 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
+              <button className="relative p-2 text-[#78909C] hover:text-[#1E88E5] transition-colors hidden sm:block">
+                <Bell size={20} />
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#DC2626] text-white text-xs rounded-full flex items-center justify-center font-medium">3</span>
+              </button>
+              <button className="relative p-2 text-[#78909C] hover:text-[#1E88E5] transition-colors hidden sm:block">
+                <Mail size={20} />
+                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#DC2626] text-white text-xs rounded-full flex items-center justify-center font-medium">2</span>
+              </button>
+
               {/* Profile Display */}
               <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-[#E0E0E0] py-1">
                 {userLoading ? (

@@ -1,17 +1,17 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Shield, Loader2, Search } from 'lucide-react';
 import UserCard from '@/components/UserCard';
+import UserDetailModal from '@/components/UserDetailModal';
 import { adminService } from '@/services/adminService';
 import type { User } from '@/types';
 
 export default function AdminsPage() {
-  const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchAdmins = async () => {
@@ -85,13 +85,22 @@ export default function AdminsPage() {
           {filteredUsers.map((user) => (
             <div
               key={user.id}
-              onClick={() => router.push(`/admin/admins/${user.id}`)}
+              onClick={() => setSelectedUserId(user.id)}
               className="cursor-pointer"
             >
               <UserCard user={user} role="admin" />
             </div>
           ))}
         </div>
+      )}
+
+      {/* Detail Modal */}
+      {selectedUserId && (
+        <UserDetailModal
+          userId={selectedUserId}
+          role="admin"
+          onClose={() => setSelectedUserId(null)}
+        />
       )}
     </div>
   );

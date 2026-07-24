@@ -1,19 +1,16 @@
 import api from './api';
 
 export const paymentService = {
-  // Get all payments (Admin only)
-  getAllPayments: async () => {
-    const response = await api.get('/payments/admin/all');
+  createPayment: async (data: { enrollment_id: number; amount: number; payment_method: string }) => {
+    const response = await api.post('/payments', data);
     return response.data;
   },
 
-  // Get payment statistics (Admin only)
-  getPaymentStats: async () => {
-    const response = await api.get('/payments/admin/stats');
+  getPayments: async () => {
+    const response = await api.get('/payments');
     return response.data;
   },
 
-  // Get payment by ID
   getPaymentById: async (id: number) => {
     const response = await api.get(`/payments/${id}`);
     return response.data;

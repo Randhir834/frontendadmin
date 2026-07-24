@@ -101,29 +101,15 @@ export interface Enrollment {
 export interface Payment {
   id: number;
   user_id: number;
-  course_id: number;
-  enrollment_id?: number;
+  enrollment_id: number;
   amount: number;
-  currency: string;
-  payment_method?: string;
-  razorpay_order_id?: string;
-  razorpay_payment_id?: string;
-  razorpay_signature?: string;
+  payment_method: string;
+  transaction_id?: string;
   status: 'pending' | 'completed' | 'failed' | 'refunded';
   paid_at?: string;
   course_title?: string;
-  course_thumbnail?: string;
-  student_name?: string;
-  student_email?: string;
   created_at: string;
   updated_at: string;
-}
-
-export interface PaymentStats {
-  successful_payments: number;
-  failed_payments: number;
-  total_payments: number;
-  total_revenue: number;
 }
 
 export interface Assignment {
@@ -305,6 +291,37 @@ export interface AuthResponse {
   message: string;
   user: Pick<User, 'id' | 'name' | 'email' | 'role'>;
   token: string;
+}
+
+export interface Review {
+  id: number;
+  name: string;
+  role: string;
+  rating: number;
+  message: string;
+  status: 'pending' | 'approved' | 'rejected';
+  email?: string;
+  phone?: string;
+  course_name?: string;
+  admin_notes?: string;
+  reviewed_by?: number;
+  reviewed_by_name?: string;
+  reviewed_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ReviewStats {
+  pending_count: number;
+  approved_count: number;
+  rejected_count: number;
+  total_count: number;
+  average_rating: number;
+}
+
+export interface RatingDistribution {
+  rating: number;
+  count: number;
 }
 
 export interface ApiError {

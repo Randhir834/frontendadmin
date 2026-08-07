@@ -268,7 +268,7 @@ export default function BlogsManagementPage() {
               </p>
             </div>
             <button
-              onClick={() => toast.info('Create blog form coming soon!')}
+              onClick={() => toast('Create blog form coming soon!', { icon: 'ℹ️' })}
               className="flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-semibold shadow-md"
             >
               <PlusCircle className="w-5 h-5" />

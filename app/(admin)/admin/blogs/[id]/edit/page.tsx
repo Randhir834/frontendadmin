@@ -81,7 +81,7 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
     try {
       setUploading(true);
       const uploadedUrl = await storageService.uploadFile(file, 'blog-images');
-      setFormData((prev) => ({ ...prev, featured_image_url: uploadedUrl }));
+      setFormData((prev) => ({ ...prev, featured_image_url: uploadedUrl.url }));
     } catch (error) {
       console.error('Error uploading image:', error);
       alert('Failed to upload image');

@@ -393,8 +393,20 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
       const tokenResponse = await courseMaterialService.getViewingToken(material.id);
       const urlResponse = await courseMaterialService.getSecureUrl(tokenResponse.token);
       
-      // Open in new tab
-      window.open(urlResponse.secureUrl, '_blank');
+      // For DOC/DOCX/PPT/PPTX files, use online viewer
+      if (['ppt', 'document'].includes(material.file_type)) {
+        const fileUrl = encodeURIComponent(urlResponse.secureUrl);
+        
+        // Use Microsoft Office Online Viewer for better compatibility
+        // This works for both PPT and DOC files
+        const viewerUrl = `https://view.officeapps.live.com/op/view.aspx?src=${fileUrl}`;
+        
+        // Open in new tab
+        window.open(viewerUrl, '_blank');
+      } else {
+        // For PDF and other files, open directly
+        window.open(urlResponse.secureUrl, '_blank');
+      }
     } catch (error) {
       console.error('Failed to view material:', error);
       alert('Failed to open material. Please try again.');

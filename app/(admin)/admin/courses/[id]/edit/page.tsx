@@ -447,8 +447,13 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
     
     try {
       // Upload materials one by one with individual error tracking
-      const uploadResults = [];
-      const uploadErrors = [];
+      const uploadResults: CourseMaterial[] = [];
+      const uploadErrors: Array<{
+        fileName: string;
+        error: string;
+        fileSize: number;
+        fileType: string;
+      }> = [];
 
       for (let i = 0; i < newMaterials.length; i++) {
         const material = newMaterials[i];

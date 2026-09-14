@@ -446,26 +446,72 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
     setUploadingMaterials(true);
     
     try {
-      const uploadPromises = newMaterials.map(material =>
-        courseMaterialService.uploadMaterial(courseId, material.file, {
-          title: material.title,
-          description: material.description,
-          folder_path: material.folderPath
-        })
-      );
+      // Upload materials one by one with individual error tracking
+      const uploadResults = [];
+      const uploadErrors = [];
 
-      const results = await Promise.all(uploadPromises);
+      for (let i = 0; i < newMaterials.length; i++) {
+        const material = newMaterials[i];
+        try {
+          console.log(`Uploading material ${i + 1}/${newMaterials.length}: ${material.title}`);
+          
+          const result = await courseMaterialService.uploadMaterial(courseId, material.file, {
+            title: material.title,
+            description: material.description,
+            folder_path: material.folderPath
+          });
+          
+          uploadResults.push(result.material);
+          console.log(`✓ Successfully uploaded: ${material.title}`);
+        } catch (error: any) {
+          console.error(`✗ Failed to upload ${material.title}:`, error);
+          
+          // Extract detailed error information
+          const errorMessage = error?.response?.data?.message || 
+                              error?.response?.data?.error || 
+                              error?.message || 
+                              'Unknown error';
+          
+          uploadErrors.push({
+            fileName: material.title,
+            error: errorMessage,
+            fileSize: material.file.size,
+            fileType: material.file.type
+          });
+        }
+      }
       
-      // Add newly uploaded materials to existing materials
-      const uploadedMaterials = results.map(result => result.material);
-      setExistingMaterials(prev => [...prev, ...uploadedMaterials]);
+      // Add successfully uploaded materials to existing materials
+      if (uploadResults.length > 0) {
+        setExistingMaterials(prev => [...prev, ...uploadResults]);
+      }
       
-      // Clear new materials
-      setNewMaterials([]);
+      // Remove successfully uploaded materials from newMaterials
+      if (uploadResults.length === newMaterials.length) {
+        // All succeeded
+        setNewMaterials([]);
+        console.log('All new materials uploaded successfully');
+      } else {
+        // Some failed - keep only the failed ones
+        const failedFileNames = uploadErrors.map(e => e.fileName);
+        setNewMaterials(prev => prev.filter(m => failedFileNames.includes(m.title)));
+      }
       
-      console.log('All new materials uploaded successfully');
+      // If there were errors, throw detailed error message
+      if (uploadErrors.length > 0) {
+        const errorDetails = uploadErrors.map(e => 
+          `• ${e.fileName}: ${e.error}`
+        ).join('\n');
+        
+        const error = new Error(
+          `Failed to upload ${uploadErrors.length} of ${newMaterials.length} materials:\n${errorDetails}`
+        );
+        (error as any).uploadErrors = uploadErrors;
+        (error as any).successCount = uploadResults.length;
+        throw error;
+      }
     } catch (error) {
-      console.error('Failed to upload some materials:', error);
+      console.error('Material upload process error:', error);
       throw error; // Re-throw to handle in main submit
     } finally {
       setUploadingMaterials(false);
@@ -511,14 +557,35 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
         try {
           await uploadNewMaterials();
           alert(`Course updated successfully with ${newMaterials.length} new materials uploaded!`);
-        } catch (materialError) {
-          alert('Course updated successfully, but some new materials failed to upload. You can try uploading them again.');
+          router.push('/admin/courses');
+        } catch (materialError: any) {
+          // Show detailed error message
+          const errorMsg = materialError?.message || 'Unknown error occurred';
+          const successCount = materialError?.successCount || 0;
+          const totalCount = newMaterials.length;
+          
+          if (successCount > 0) {
+            alert(
+              `Course updated successfully!\n\n` +
+              `✓ ${successCount} materials uploaded successfully\n` +
+              `✗ ${totalCount - successCount} materials failed\n\n` +
+              `${errorMsg}\n\n` +
+              `The failed materials remain in the upload queue below. You can try uploading them again.`
+            );
+          } else {
+            alert(
+              `Course updated successfully, but all ${totalCount} materials failed to upload.\n\n` +
+              `Error details:\n${errorMsg}\n\n` +
+              `Please check the file sizes, types, and try again.`
+            );
+          }
+          // Don't navigate away - let user retry
+          return;
         }
       } else {
         alert('Course updated successfully!');
+        router.push('/admin/courses');
       }
-      
-      router.push('/admin/courses');
     } catch {
       alert('Failed to update course');
     } finally {

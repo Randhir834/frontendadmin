@@ -32,7 +32,8 @@ class CourseMaterialService {
   async uploadMaterial(
     courseId: number,
     file: File,
-    data: { title: string; description?: string; folder_path?: string }
+    data: { title: string; description?: string; folder_path?: string },
+    retries = 2
   ): Promise<{ material: CourseMaterial }> {
     const formData = new FormData();
     formData.append('file', file);
@@ -44,12 +45,52 @@ class CourseMaterialService {
       formData.append('folder_path', data.folder_path);
     }
 
-    const response = await api.post(`/courses/${courseId}/materials`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    let lastError: any;
+
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        console.log(`Upload attempt ${attempt + 1}/${retries + 1} for: ${file.name}`);
+        
+        const response = await api.post(`/courses/${courseId}/materials`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          timeout: 300000, // 5 minutes timeout for large file uploads
+          onUploadProgress: (progressEvent) => {
+            if (progressEvent.total) {
+              const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+              console.log(`Upload progress: ${percentCompleted}% - ${file.name}`);
+            }
+          },
+        });
+        return response.data;
+      } catch (error: any) {
+        lastError = error;
+        
+        // Don't retry on validation errors (400) or auth errors (401, 403)
+        const status = error?.response?.status;
+        if (status && [400, 401, 403].includes(status)) {
+          throw error;
+        }
+        
+        // If it's a network error or timeout and we have retries left, wait and retry
+        if (attempt < retries) {
+          const waitTime = Math.min(1000 * Math.pow(2, attempt), 5000); // Exponential backoff, max 5s
+          console.log(`Upload failed, retrying in ${waitTime}ms...`);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+        }
+      }
+    }
+
+    // All retries failed, throw the last error with enhanced message
+    const errorMessage = lastError?.response?.data?.message || 
+                        lastError?.response?.data?.error || 
+                        lastError?.message || 
+                        'Unknown error';
+    
+    throw new Error(
+      `${errorMessage} (File: ${file.name}, Size: ${this.formatFileSize(file.size)}, Attempts: ${retries + 1})`
+    );
   }
 
   /**

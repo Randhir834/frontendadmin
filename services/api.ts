@@ -6,6 +6,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 60000, // 60 seconds default timeout for regular API calls
 });
 
 api.interceptors.request.use(

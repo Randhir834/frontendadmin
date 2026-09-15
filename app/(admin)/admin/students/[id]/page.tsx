@@ -16,7 +16,9 @@ import {
   School,
   User,
   Loader2,
-  ExternalLink
+  ExternalLink,
+  Plus,
+  X
 } from 'lucide-react';
 
 interface LiveClass {
@@ -75,6 +77,15 @@ interface StudentData {
   };
 }
 
+interface Course {
+  id: number;
+  title: string;
+  description: string;
+  status: string;
+  level?: string;
+  thumbnail_url?: string;
+}
+
 export default function StudentDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -82,6 +93,13 @@ export default function StudentDetailPage() {
 
   const [data, setData] = useState<StudentData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showEnrollModal, setShowEnrollModal] = useState(false);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [enrolling, setEnrolling] = useState(false);
+  const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [enrollmentMessage, setEnrollmentMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
     if (studentId) {
@@ -99,6 +117,73 @@ export default function StudentDetailPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchAvailableCourses = async () => {
+    try {
+      setLoadingCourses(true);
+      const res = await api.get('/courses');
+      setCourses(res.data.courses || []);
+    } catch (error) {
+      console.error('Failed to fetch courses:', error);
+    } finally {
+      setLoadingCourses(false);
+    }
+  };
+
+  const handleEnrollClick = () => {
+    setShowEnrollModal(true);
+    fetchAvailableCourses();
+    setEnrollmentMessage(null);
+  };
+
+  const handleEnrollSubmit = async () => {
+    if (!selectedCourse) {
+      setEnrollmentMessage({ type: 'error', text: 'Please select a course' });
+      return;
+    }
+
+    try {
+      setEnrolling(true);
+      setEnrollmentMessage(null);
+      
+      await api.post(`/admin/students/${studentId}/enroll`, {
+        course_id: selectedCourse
+      });
+
+      setEnrollmentMessage({ type: 'success', text: 'Student enrolled successfully!' });
+      
+      // Refresh student data to show the new enrollment
+      setTimeout(() => {
+        fetchStudentData();
+        setShowEnrollModal(false);
+        setSelectedCourse(null);
+        setSearchQuery('');
+      }, 1500);
+    } catch (error: any) {
+      console.error('Failed to enroll student:', error);
+      const errorMessage = error.response?.data?.error || 'Failed to enroll student';
+      setEnrollmentMessage({ type: 'error', text: errorMessage });
+    } finally {
+      setEnrolling(false);
+    }
+  };
+
+  const getEnrolledCourseIds = () => {
+    if (!data?.enrollments) return [];
+    return data.enrollments.map(enrollment => enrollment.course_id);
+  };
+
+  const getFilteredCourses = () => {
+    const enrolledIds = getEnrolledCourseIds();
+    const filtered = courses.filter(course => !enrolledIds.includes(course.id));
+    
+    if (!searchQuery) return filtered;
+    
+    return filtered.filter(course =>
+      course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      course.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
   };
 
   if (loading) {
@@ -122,12 +207,164 @@ export default function StudentDetailPage() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-[#1E293B]">Student Details</h1>
-        <p className="text-sm text-[#64748B] mt-1">
-          Comprehensive overview of student progress and enrollments
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-bold text-[#1E293B]">Student Details</h1>
+          <p className="text-sm text-[#64748B] mt-1">
+            Comprehensive overview of student progress and enrollments
+          </p>
+        </div>
+        <button
+          onClick={handleEnrollClick}
+          className="flex items-center gap-2 px-4 py-2 bg-[#6366F1] text-white rounded-lg hover:bg-[#4F46E5] transition-colors"
+        >
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">Enroll in Course</span>
+          <span className="sm:hidden">Enroll</span>
+        </button>
       </div>
+
+      {/* Enrollment Modal */}
+      {showEnrollModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0]">
+              <div>
+                <h2 className="text-xl font-bold text-[#1E293B]">Enroll Student in Course</h2>
+                <p className="text-sm text-[#64748B] mt-1">
+                  Select a course to enroll {data?.student.name}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setShowEnrollModal(false);
+                  setSelectedCourse(null);
+                  setSearchQuery('');
+                  setEnrollmentMessage(null);
+                }}
+                className="p-2 hover:bg-[#F1F5F9] rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-[#64748B]" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Search */}
+              <div>
+                <input
+                  type="text"
+                  placeholder="Search courses..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6366F1]"
+                />
+              </div>
+
+              {/* Message */}
+              {enrollmentMessage && (
+                <div className={`p-4 rounded-lg ${
+                  enrollmentMessage.type === 'success'
+                    ? 'bg-[#D1FAE5] text-[#065F46]'
+                    : 'bg-[#FEE2E2] text-[#991B1B]'
+                }`}>
+                  {enrollmentMessage.text}
+                </div>
+              )}
+
+              {/* Course List */}
+              <div className="max-h-96 overflow-y-auto space-y-3">
+                {loadingCourses ? (
+                  <div className="flex items-center justify-center py-12">
+                    <Loader2 className="w-8 h-8 animate-spin text-[#6366F1]" />
+                  </div>
+                ) : getFilteredCourses().length === 0 ? (
+                  <div className="text-center py-12">
+                    <BookOpen className="w-12 h-12 text-[#CBD5E1] mx-auto mb-3" />
+                    <p className="text-[#64748B]">
+                      {searchQuery ? 'No courses match your search' : 'No available courses to enroll'}
+                    </p>
+                  </div>
+                ) : (
+                  getFilteredCourses().map((course) => (
+                    <div
+                      key={course.id}
+                      onClick={() => setSelectedCourse(course.id)}
+                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
+                        selectedCourse === course.id
+                          ? 'border-[#6366F1] bg-[#EEF2FF]'
+                          : 'border-[#E2E8F0] hover:border-[#CBD5E1]'
+                      }`}
+                    >
+                      <div className="flex gap-4">
+                        {course.thumbnail_url && (
+                          <img
+                            src={course.thumbnail_url}
+                            alt={course.title}
+                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                          />
+                        )}
+                        <div className="flex-grow">
+                          <div className="flex items-start justify-between gap-2">
+                            <h3 className="font-semibold text-[#1E293B]">{course.title}</h3>
+                            <div className="flex items-center gap-2">
+                              {course.level && (
+                                <span className="text-xs px-2 py-1 bg-[#F1F5F9] text-[#64748B] rounded">
+                                  {course.level}
+                                </span>
+                              )}
+                              <span className={`text-xs px-2 py-1 rounded ${
+                                course.status === 'published'
+                                  ? 'bg-[#D1FAE5] text-[#065F46]'
+                                  : 'bg-[#FEF3C7] text-[#92400E]'
+                              }`}>
+                                {course.status}
+                              </span>
+                            </div>
+                          </div>
+                          <p className="text-sm text-[#64748B] mt-1 line-clamp-2">
+                            {course.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-[#E2E8F0]">
+              <button
+                onClick={() => {
+                  setShowEnrollModal(false);
+                  setSelectedCourse(null);
+                  setSearchQuery('');
+                  setEnrollmentMessage(null);
+                }}
+                className="px-4 py-2 text-[#64748B] hover:bg-[#F1F5F9] rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEnrollSubmit}
+                disabled={!selectedCourse || enrolling}
+                className="px-6 py-2 bg-[#6366F1] text-white rounded-lg hover:bg-[#4F46E5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                {enrolling ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Enrolling...
+                  </>
+                ) : (
+                  'Enroll Student'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Student Profile Card */}
       <div className="bg-white rounded-xl border border-[#E2E8F0] p-6">

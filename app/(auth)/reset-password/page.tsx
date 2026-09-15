@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation';
 import AdminAuthSplitShell from '@/components/layouts/AdminAuthSplitShell';
 import Input from '@/components/ui/Input';
 import { authService } from '@/services/authService';
+import { PageLoading } from '@/components/ui/LoadingSpinner';
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -119,7 +120,7 @@ export default function ResetPasswordPage() {
       }
       leftSubtitle="Choose a strong password for your administrator account."
     >
-      <Suspense fallback={<p className="text-center text-sm text-text-muted">Loading…</p>}>
+      <Suspense fallback={<PageLoading message="Loading..." />}>
         <ResetPasswordForm />
       </Suspense>
     </AdminAuthSplitShell>

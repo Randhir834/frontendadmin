@@ -12,6 +12,7 @@ import { courseService } from '@/services/courseService';
 import { categoryService } from '@/services/categoryService';
 import api from '@/services/api';
 import type { Course, Category } from '@/types';
+import { PageLoading } from '@/components/ui/LoadingSpinner';
 
 function CoursesContent() {
   const searchParams = useSearchParams();
@@ -192,13 +193,7 @@ function CoursesContent() {
 
 export default function AdminCoursesPage() {
   return (
-    <Suspense fallback={
-      <div className="p-4 md:p-8 max-w-[1400px] mx-auto">
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="size-8 animate-spin text-[#1E88E5]" />
-        </div>
-      </div>
-    }>
+    <Suspense fallback={<PageLoading message="Loading courses..." />}>
       <CoursesContent />
     </Suspense>
   );

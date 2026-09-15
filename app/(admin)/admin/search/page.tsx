@@ -7,6 +7,7 @@ import { Search, BookOpen, FileText, FolderOpen, Users, Loader2 } from 'lucide-r
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { searchService } from '@/services/searchService';
 import type { SearchResults } from '@/services/searchService';
+import { PageLoading } from '@/components/ui/LoadingSpinner';
 
 function SearchResultsContent() {
   const searchParams = useSearchParams();
@@ -201,11 +202,7 @@ function SearchResultsContent() {
 
 export default function SearchPage() {
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    }>
+    <Suspense fallback={<PageLoading message="Loading search results..." />}>
       <SearchResultsContent />
     </Suspense>
   );

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, Edit, Trash2, Eye, Search, Filter, Calendar, User } from 'lucide-react';
 import { blogService } from '@/services/blogService';
+import Button from '@/components/ui/Button';
 import type { Blog } from '@/types';
 
 export default function BlogsPage() {
@@ -95,42 +96,43 @@ export default function BlogsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Blog Management</h1>
-          <p className="text-gray-600 mt-1">Create and manage blog posts</p>
+          <h1 className="text-2xl font-bold text-text-primary">Blog Management</h1>
+          <p className="text-text-muted mt-1">Create and manage blog posts</p>
         </div>
-        <button
+        <Button
+          size="lg"
           onClick={() => router.push('/admin/blogs/create')}
-          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg hover:shadow-xl"
+          className="gap-2"
         >
           <Plus className="w-5 h-5" />
           Create Blog
-        </button>
+        </Button>
       </div>
 
       {/* Blogs List */}
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500"></div>
         </div>
       ) : blogs.length === 0 ? (
-        <div className="bg-white rounded-xl p-12 text-center shadow-sm border border-gray-200">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Search className="w-8 h-8 text-gray-400" />
+        <div className="bg-card rounded-xl p-12 text-center shadow-sm border border-border">
+          <div className="w-16 h-16 bg-hover rounded-full flex items-center justify-center mx-auto mb-4">
+            <Search className="w-8 h-8 text-text-muted" />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No blogs found</h3>
-          <p className="text-gray-600 mb-4">
+          <h3 className="text-lg font-semibold text-text-primary mb-2">No blogs found</h3>
+          <p className="text-text-muted mb-4">
             {searchQuery || statusFilter !== 'all'
               ? 'Try adjusting your filters'
               : 'Get started by creating your first blog post'}
           </p>
           {!searchQuery && statusFilter === 'all' && (
-            <button
+            <Button
               onClick={() => router.push('/admin/blogs/create')}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+              className="gap-2"
             >
               <Plus className="w-5 h-5" />
               Create Blog
-            </button>
+            </Button>
           )}
         </div>
       ) : (
@@ -138,19 +140,19 @@ export default function BlogsPage() {
           {blogs.map((blog) => (
             <div
               key={blog.id}
-              className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow"
+              className="bg-card rounded-xl p-6 shadow-sm border border-border hover:shadow-md transition-shadow"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="text-xl font-bold text-gray-900 truncate">
+                    <h3 className="text-xl font-bold text-text-primary truncate">
                       {blog.title}
                     </h3>
                     <span
                       className={`px-3 py-1 text-xs font-semibold rounded-full ${
                         blog.status === 'published'
-                          ? 'bg-green-100 text-green-700'
-                          : 'bg-yellow-100 text-yellow-700'
+                          ? 'bg-success/10 text-success'
+                          : 'bg-warning/10 text-warning'
                       }`}
                     >
                       {blog.status === 'published' ? 'Published' : 'Draft'}
@@ -158,12 +160,12 @@ export default function BlogsPage() {
                   </div>
 
                   {blog.excerpt && (
-                    <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                    <p className="text-text-muted text-sm mb-3 line-clamp-2">
                       {blog.excerpt}
                     </p>
                   )}
 
-                  <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
+                  <div className="flex flex-wrap items-center gap-4 text-sm text-text-muted">
                     <div className="flex items-center gap-1">
                       <User className="w-4 h-4" />
                       <span>{blog.author}</span>
@@ -193,35 +195,37 @@ export default function BlogsPage() {
               </div>
 
               {/* Actions */}
-              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-gray-200">
-                <button
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
+                <Button
+                  variant="secondary"
+                  size="sm"
                   onClick={() => router.push(`/admin/blogs/${blog.id}/edit`)}
-                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 font-medium rounded-lg hover:bg-blue-100 transition-colors"
+                  className="gap-2"
                 >
                   <Edit className="w-4 h-4" />
                   Edit
-                </button>
+                </Button>
 
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleTogglePublish(blog.id)}
-                  className={`flex items-center gap-2 px-4 py-2 font-medium rounded-lg transition-colors ${
-                    blog.status === 'published'
-                      ? 'bg-yellow-50 text-yellow-700 hover:bg-yellow-100'
-                      : 'bg-green-50 text-green-700 hover:bg-green-100'
-                  }`}
+                  className="gap-2"
                 >
                   <Eye className="w-4 h-4" />
                   {blog.status === 'published' ? 'Unpublish' : 'Publish'}
-                </button>
+                </Button>
 
-                <button
+                <Button
+                  variant="outline"
+                  size="sm"
                   onClick={() => handleDelete(blog.id)}
                   disabled={deleting === blog.id}
-                  className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 font-medium rounded-lg hover:bg-red-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ml-auto"
+                  className="gap-2 ml-auto text-red-600 border-red-200 hover:bg-red-50"
                 >
                   <Trash2 className="w-4 h-4" />
                   {deleting === blog.id ? 'Deleting...' : 'Delete'}
-                </button>
+                </Button>
               </div>
             </div>
           ))}
@@ -231,23 +235,23 @@ export default function BlogsPage() {
       {/* Pagination */}
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 mt-6">
-          <button
+          <Button
+            variant="outline"
             onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
             disabled={currentPage === 1}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
-          </button>
-          <span className="px-4 py-2 text-gray-700">
+          </Button>
+          <span className="px-4 py-2 text-text-primary">
             Page {currentPage} of {totalPages}
           </span>
-          <button
+          <Button
+            variant="outline"
             onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
-            className="px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
-          </button>
+          </Button>
         </div>
       )}
     </div>

@@ -2,9 +2,12 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Upload, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Image as ImageIcon, Trash2, AlertCircle } from 'lucide-react';
 import { blogService } from '@/services/blogService';
 import { storageService } from '@/services/storageService';
+import Button from '@/components/ui/Button';
+import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
+import Input from '@/components/ui/Input';
 import type { BlogFormData } from '@/types';
 
 export default function CreateBlogPage() {
@@ -105,211 +108,229 @@ export default function CreateBlogPage() {
   };
 
   return (
-    <div className="p-6 max-w-5xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 max-w-[1000px] mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
         <button
           onClick={() => router.back()}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-2 hover:bg-hover rounded-lg transition-colors"
         >
-          <ArrowLeft className="w-6 h-6" />
+          <ArrowLeft className="w-6 h-6 text-text-primary" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Create New Blog</h1>
-          <p className="text-gray-600 mt-1">Fill in the details to create a new blog post</p>
+          <h1 className="text-xl md:text-2xl font-bold text-text-primary">Create New Blog</h1>
+          <p className="text-sm text-text-muted mt-1">Fill in the details to create a new blog post</p>
         </div>
       </div>
 
       {/* Form */}
       <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
         {/* Title */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <label htmlFor="title" className="block text-sm font-semibold text-gray-700 mb-2">
-            Blog Title <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="title"
-            name="title"
-            value={formData.title}
-            onChange={handleChange}
-            placeholder="Enter blog title"
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-              errors.title ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
-          {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Blog Title *</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input
+              type="text"
+              id="title"
+              name="title"
+              value={formData.title}
+              onChange={handleChange}
+              placeholder="Enter blog title"
+              className={errors.title ? 'border-red-500' : ''}
+            />
+            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+          </CardContent>
+        </Card>
 
         {/* Author */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <label htmlFor="author" className="block text-sm font-semibold text-gray-700 mb-2">
-            Author Name <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="author"
-            name="author"
-            value={formData.author}
-            onChange={handleChange}
-            placeholder="Enter author name"
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
-              errors.author ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
-          {errors.author && <p className="text-red-500 text-sm mt-1">{errors.author}</p>}
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Author Name *</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Input
+              type="text"
+              id="author"
+              name="author"
+              value={formData.author}
+              onChange={handleChange}
+              placeholder="Enter author name"
+              className={errors.author ? 'border-red-500' : ''}
+            />
+            {errors.author && <p className="text-red-500 text-sm mt-1">{errors.author}</p>}
+          </CardContent>
+        </Card>
 
         {/* Excerpt */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <label htmlFor="excerpt" className="block text-sm font-semibold text-gray-700 mb-2">
-            Excerpt
-          </label>
-          <textarea
-            id="excerpt"
-            name="excerpt"
-            value={formData.excerpt}
-            onChange={handleChange}
-            rows={3}
-            placeholder="Brief summary of the blog (optional)"
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-          <p className="text-xs text-gray-500 mt-1">A short description that appears in blog listings</p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Excerpt</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <textarea
+              id="excerpt"
+              name="excerpt"
+              value={formData.excerpt}
+              onChange={handleChange}
+              rows={3}
+              placeholder="Brief summary of the blog (optional)"
+              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+            />
+            <p className="text-xs text-text-muted mt-1">A short description that appears in blog listings</p>
+          </CardContent>
+        </Card>
 
         {/* Content */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <label htmlFor="content" className="block text-sm font-semibold text-gray-700 mb-2">
-            Blog Content <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            id="content"
-            name="content"
-            value={formData.content}
-            onChange={handleChange}
-            rows={15}
-            placeholder="Write your blog content here..."
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 font-mono text-sm ${
-              errors.content ? 'border-red-500' : 'border-gray-300'
-            }`}
-          />
-          {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content}</p>}
-          <p className="text-xs text-gray-500 mt-1">You can use markdown formatting</p>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Blog Content *</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <textarea
+              id="content"
+              name="content"
+              value={formData.content}
+              onChange={handleChange}
+              rows={15}
+              placeholder="Write your blog content here..."
+              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent font-mono text-sm resize-none ${
+                errors.content ? 'border-red-500' : 'border-border'
+              }`}
+            />
+            {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content}</p>}
+            <p className="text-xs text-text-muted mt-1">You can use markdown formatting</p>
+          </CardContent>
+        </Card>
 
         {/* Featured Image */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            Featured Image
-          </label>
-          
-          {formData.featured_image_url ? (
-            <div className="space-y-3">
-              <img
-                src={formData.featured_image_url}
-                alt="Featured"
-                className="w-full h-64 object-cover rounded-lg"
-              />
-              <button
-                type="button"
-                onClick={() => setFormData((prev) => ({ ...prev, featured_image_url: '' }))}
-                className="text-sm text-red-600 hover:text-red-700 font-medium"
-              >
-                Remove Image
-              </button>
-            </div>
-          ) : (
-            <div>
-              <label
-                htmlFor="image-upload"
-                className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-colors"
-              >
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  {uploading ? (
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
-                  ) : (
-                    <>
-                      <ImageIcon className="w-12 h-12 text-gray-400 mb-3" />
-                      <p className="mb-2 text-sm text-gray-600">
-                        <span className="font-semibold">Click to upload</span> or drag and drop
-                      </p>
-                      <p className="text-xs text-gray-500">PNG, JPG or GIF (MAX. 5MB)</p>
-                    </>
-                  )}
+        <Card>
+          <CardHeader>
+            <CardTitle>Featured Image</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {formData.featured_image_url ? (
+              <div className="space-y-3">
+                <div className="relative">
+                  <img
+                    src={formData.featured_image_url}
+                    alt="Featured"
+                    className="w-full h-64 object-cover rounded-lg"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setFormData((prev) => ({ ...prev, featured_image_url: '' }))}
+                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  disabled={uploading}
-                  className="hidden"
-                />
-              </label>
-            </div>
-          )}
-        </div>
+              </div>
+            ) : (
+              <div>
+                <label
+                  htmlFor="image-upload"
+                  className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-border rounded-lg cursor-pointer hover:border-primary-500 hover:bg-primary-50 transition-colors"
+                >
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    {uploading ? (
+                      <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary-500"></div>
+                    ) : (
+                      <>
+                        <ImageIcon className="w-12 h-12 text-text-muted mb-3" />
+                        <p className="mb-2 text-sm text-text-secondary">
+                          <span className="font-semibold">Click to upload</span> or drag and drop
+                        </p>
+                        <p className="text-xs text-text-muted">PNG, JPG or GIF (MAX. 5MB)</p>
+                      </>
+                    )}
+                  </div>
+                  <input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Publication Date and Status */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label htmlFor="publication_date" className="block text-sm font-semibold text-gray-700 mb-2">
-              Publication Date
-            </label>
-            <input
-              type="date"
-              id="publication_date"
-              name="publication_date"
-              value={formData.publication_date}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Publication Settings</CardTitle>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label htmlFor="publication_date" className="block text-sm font-medium text-text-secondary mb-2">
+                Publication Date
+              </label>
+              <Input
+                type="date"
+                id="publication_date"
+                name="publication_date"
+                value={formData.publication_date}
+                onChange={handleChange}
+              />
+            </div>
 
-          <div>
-            <label htmlFor="status" className="block text-sm font-semibold text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="draft">Draft</option>
-              <option value="published">Published</option>
-            </select>
-          </div>
-        </div>
+            <div>
+              <label htmlFor="status" className="block text-sm font-medium text-text-secondary mb-2">
+                Status
+              </label>
+              <select
+                id="status"
+                name="status"
+                value={formData.status}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              >
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Actions */}
-        <div className="flex items-center gap-3 justify-end bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            className="px-6 py-3 border border-gray-300 text-gray-700 font-semibold rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Save className="w-5 h-5" />
-            {loading ? 'Saving...' : 'Save as Draft'}
-          </button>
-          <button
-            type="button"
-            onClick={(e) => handleSubmit(e, true)}
-            disabled={loading}
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-semibold rounded-lg hover:from-green-700 hover:to-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Upload className="w-5 h-5" />
-            {loading ? 'Publishing...' : 'Publish Now'}
-          </button>
-        </div>
+        <Card>
+          <CardContent>
+            <div className="flex items-center gap-3 justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => router.back()}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={loading}
+                className="gap-2"
+              >
+                <Save className="w-5 h-5" />
+                {loading ? 'Saving...' : 'Save as Draft'}
+              </Button>
+              <Button
+                type="button"
+                onClick={(e) => handleSubmit(e, true)}
+                disabled={loading}
+                className="gap-2"
+              >
+                <Upload className="w-5 h-5" />
+                {loading ? 'Publishing...' : 'Publish Now'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </form>
     </div>
   );

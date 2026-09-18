@@ -86,6 +86,17 @@ interface Course {
   thumbnail_url?: string;
 }
 
+interface Instructor {
+  id: number;
+  name: string;
+  email: string;
+  phone?: string;
+  location?: string;
+  qualifications?: string;
+  specialization?: string;
+  avatar_url?: string;
+}
+
 export default function StudentDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -95,10 +106,14 @@ export default function StudentDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showEnrollModal, setShowEnrollModal] = useState(false);
   const [courses, setCourses] = useState<Course[]>([]);
+  const [instructors, setInstructors] = useState<Instructor[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
+  const [loadingInstructors, setLoadingInstructors] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
   const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
+  const [selectedInstructor, setSelectedInstructor] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [instructorSearchQuery, setInstructorSearchQuery] = useState('');
   const [enrollmentMessage, setEnrollmentMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
   useEffect(() => {
@@ -131,9 +146,22 @@ export default function StudentDetailPage() {
     }
   };
 
+  const fetchInstructors = async () => {
+    try {
+      setLoadingInstructors(true);
+      const res = await api.get('/admin/instructors');
+      setInstructors(res.data.instructors || []);
+    } catch (error) {
+      console.error('Failed to fetch instructors:', error);
+    } finally {
+      setLoadingInstructors(false);
+    }
+  };
+
   const handleEnrollClick = () => {
     setShowEnrollModal(true);
     fetchAvailableCourses();
+    fetchInstructors();
     setEnrollmentMessage(null);
   };
 
@@ -148,7 +176,8 @@ export default function StudentDetailPage() {
       setEnrollmentMessage(null);
       
       await api.post(`/admin/students/${studentId}/enroll`, {
-        course_id: selectedCourse
+        course_id: selectedCourse,
+        instructor_id: selectedInstructor // Can be null if no instructor selected
       });
 
       setEnrollmentMessage({ type: 'success', text: 'Student enrolled successfully!' });
@@ -158,7 +187,9 @@ export default function StudentDetailPage() {
         fetchStudentData();
         setShowEnrollModal(false);
         setSelectedCourse(null);
+        setSelectedInstructor(null);
         setSearchQuery('');
+        setInstructorSearchQuery('');
       }, 1500);
     } catch (error: any) {
       console.error('Failed to enroll student:', error);
@@ -183,6 +214,16 @@ export default function StudentDetailPage() {
     return filtered.filter(course =>
       course.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       course.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  };
+
+  const getFilteredInstructors = () => {
+    if (!instructorSearchQuery) return instructors;
+    
+    return instructors.filter(instructor =>
+      instructor.name.toLowerCase().includes(instructorSearchQuery.toLowerCase()) ||
+      instructor.email?.toLowerCase().includes(instructorSearchQuery.toLowerCase()) ||
+      instructor.specialization?.toLowerCase().includes(instructorSearchQuery.toLowerCase())
     );
   };
 
@@ -226,45 +267,36 @@ export default function StudentDetailPage() {
 
       {/* Enrollment Modal */}
       {showEnrollModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between p-6 border-b border-[#E2E8F0]">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full my-8 flex flex-col max-h-[90vh]">
+            {/* Modal Header - Fixed */}
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-[#E2E8F0] flex-shrink-0">
               <div>
-                <h2 className="text-xl font-bold text-[#1E293B]">Enroll Student in Course</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-[#1E293B]">Enroll Student in Course</h2>
                 <p className="text-sm text-[#64748B] mt-1">
-                  Select a course to enroll {data?.student.name}
+                  Select a course and optionally assign an instructor for {data?.student.name}
                 </p>
               </div>
               <button
                 onClick={() => {
                   setShowEnrollModal(false);
                   setSelectedCourse(null);
+                  setSelectedInstructor(null);
                   setSearchQuery('');
+                  setInstructorSearchQuery('');
                   setEnrollmentMessage(null);
                 }}
-                className="p-2 hover:bg-[#F1F5F9] rounded-lg transition-colors"
+                className="p-2 hover:bg-[#F1F5F9] rounded-lg transition-colors flex-shrink-0"
               >
                 <X className="w-5 h-5 text-[#64748B]" />
               </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 space-y-4">
-              {/* Search */}
-              <div>
-                <input
-                  type="text"
-                  placeholder="Search courses..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6366F1]"
-                />
-              </div>
-
+            {/* Modal Body - Scrollable */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
               {/* Message */}
               {enrollmentMessage && (
-                <div className={`p-4 rounded-lg ${
+                <div className={`p-4 rounded-lg text-sm ${
                   enrollmentMessage.type === 'success'
                     ? 'bg-[#D1FAE5] text-[#065F46]'
                     : 'bg-[#FEE2E2] text-[#991B1B]'
@@ -273,92 +305,205 @@ export default function StudentDetailPage() {
                 </div>
               )}
 
-              {/* Course List */}
-              <div className="max-h-96 overflow-y-auto space-y-3">
-                {loadingCourses ? (
-                  <div className="flex items-center justify-center py-12">
-                    <Loader2 className="w-8 h-8 animate-spin text-[#6366F1]" />
-                  </div>
-                ) : getFilteredCourses().length === 0 ? (
-                  <div className="text-center py-12">
-                    <BookOpen className="w-12 h-12 text-[#CBD5E1] mx-auto mb-3" />
-                    <p className="text-[#64748B]">
-                      {searchQuery ? 'No courses match your search' : 'No available courses to enroll'}
-                    </p>
-                  </div>
-                ) : (
-                  getFilteredCourses().map((course) => (
-                    <div
-                      key={course.id}
-                      onClick={() => setSelectedCourse(course.id)}
-                      className={`p-4 border rounded-lg cursor-pointer transition-all ${
-                        selectedCourse === course.id
-                          ? 'border-[#6366F1] bg-[#EEF2FF]'
-                          : 'border-[#E2E8F0] hover:border-[#CBD5E1]'
-                      }`}
-                    >
-                      <div className="flex gap-4">
-                        {course.thumbnail_url && (
-                          <img
-                            src={course.thumbnail_url}
-                            alt={course.title}
-                            className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-                          />
-                        )}
-                        <div className="flex-grow">
-                          <div className="flex items-start justify-between gap-2">
-                            <h3 className="font-semibold text-[#1E293B]">{course.title}</h3>
-                            <div className="flex items-center gap-2">
-                              {course.level && (
-                                <span className="text-xs px-2 py-1 bg-[#F1F5F9] text-[#64748B] rounded">
-                                  {course.level}
+              {/* Course Selection Section */}
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-md font-semibold text-[#1E293B] mb-2 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-[#6366F1]" />
+                    Select Course
+                  </h3>
+                  <input
+                    type="text"
+                    placeholder="Search courses..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="w-full px-4 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6366F1] text-sm"
+                  />
+                </div>
+
+                {/* Course List */}
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {loadingCourses ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-[#6366F1]" />
+                    </div>
+                  ) : getFilteredCourses().length === 0 ? (
+                    <div className="text-center py-12">
+                      <BookOpen className="w-12 h-12 text-[#CBD5E1] mx-auto mb-3" />
+                      <p className="text-[#64748B] text-sm">
+                        {searchQuery ? 'No courses match your search' : 'No available courses to enroll'}
+                      </p>
+                    </div>
+                  ) : (
+                    getFilteredCourses().map((course) => (
+                      <div
+                        key={course.id}
+                        onClick={() => setSelectedCourse(course.id)}
+                        className={`p-3 sm:p-4 border rounded-lg cursor-pointer transition-all ${
+                          selectedCourse === course.id
+                            ? 'border-[#6366F1] bg-[#EEF2FF]'
+                            : 'border-[#E2E8F0] hover:border-[#CBD5E1]'
+                        }`}
+                      >
+                        <div className="flex gap-3 sm:gap-4">
+                          {course.thumbnail_url && (
+                            <img
+                              src={course.thumbnail_url}
+                              alt={course.title}
+                              className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg flex-shrink-0"
+                            />
+                          )}
+                          <div className="flex-grow min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <h3 className="font-semibold text-[#1E293B] text-sm sm:text-base">{course.title}</h3>
+                              <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                                {course.level && (
+                                  <span className="text-xs px-2 py-1 bg-[#F1F5F9] text-[#64748B] rounded whitespace-nowrap">
+                                    {course.level}
+                                  </span>
+                                )}
+                                <span className={`text-xs px-2 py-1 rounded whitespace-nowrap ${
+                                  course.status === 'published'
+                                    ? 'bg-[#D1FAE5] text-[#065F46]'
+                                    : 'bg-[#FEF3C7] text-[#92400E]'
+                                }`}>
+                                  {course.status}
                                 </span>
-                              )}
-                              <span className={`text-xs px-2 py-1 rounded ${
-                                course.status === 'published'
-                                  ? 'bg-[#D1FAE5] text-[#065F46]'
-                                  : 'bg-[#FEF3C7] text-[#92400E]'
-                              }`}>
-                                {course.status}
-                              </span>
+                              </div>
                             </div>
+                            <p className="text-xs sm:text-sm text-[#64748B] mt-1 line-clamp-2">
+                              {course.description}
+                            </p>
                           </div>
-                          <p className="text-sm text-[#64748B] mt-1 line-clamp-2">
-                            {course.description}
-                          </p>
                         </div>
                       </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              {/* Instructor Selection Section */}
+              <div className="space-y-4 pt-4 border-t border-[#E2E8F0]">
+                <div>
+                  <h3 className="text-md font-semibold text-[#1E293B] mb-2 flex items-center gap-2">
+                    <User className="w-5 h-5 text-[#6366F1]" />
+                    Assign Instructor (Optional)
+                  </h3>
+                  <input
+                    type="text"
+                    placeholder="Search instructors..."
+                    value={instructorSearchQuery}
+                    onChange={(e) => setInstructorSearchQuery(e.target.value)}
+                    className="w-full px-4 py-2 border border-[#E2E8F0] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#6366F1] text-sm"
+                  />
+                </div>
+
+                {/* Instructor List */}
+                <div className="space-y-3 max-h-64 overflow-y-auto">
+                  {/* None Option */}
+                  <div
+                    onClick={() => setSelectedInstructor(null)}
+                    className={`p-3 sm:p-4 border rounded-lg cursor-pointer transition-all ${
+                      selectedInstructor === null
+                        ? 'border-[#6366F1] bg-[#EEF2FF]'
+                        : 'border-[#E2E8F0] hover:border-[#CBD5E1]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-[#F1F5F9] flex items-center justify-center flex-shrink-0">
+                        <X className="w-5 h-5 text-[#64748B]" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-[#1E293B] text-sm">No specific instructor</p>
+                        <p className="text-xs text-[#64748B]">Student will see all course instructors</p>
+                      </div>
                     </div>
-                  ))
-                )}
+                  </div>
+
+                  {loadingInstructors ? (
+                    <div className="flex items-center justify-center py-12">
+                      <Loader2 className="w-8 h-8 animate-spin text-[#6366F1]" />
+                    </div>
+                  ) : getFilteredInstructors().length === 0 ? (
+                    <div className="text-center py-12">
+                      <User className="w-12 h-12 text-[#CBD5E1] mx-auto mb-3" />
+                      <p className="text-[#64748B] text-sm">
+                        {instructorSearchQuery ? 'No instructors match your search' : 'No instructors available'}
+                      </p>
+                    </div>
+                  ) : (
+                    getFilteredInstructors().map((instructor) => (
+                      <div
+                        key={instructor.id}
+                        onClick={() => setSelectedInstructor(instructor.id)}
+                        className={`p-3 sm:p-4 border rounded-lg cursor-pointer transition-all ${
+                          selectedInstructor === instructor.id
+                            ? 'border-[#6366F1] bg-[#EEF2FF]'
+                            : 'border-[#E2E8F0] hover:border-[#CBD5E1]'
+                        }`}
+                      >
+                        <div className="flex gap-3 sm:gap-4">
+                          {instructor.avatar_url ? (
+                            <img
+                              src={instructor.avatar_url}
+                              alt={instructor.name}
+                              className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-[#6366F1] flex items-center justify-center flex-shrink-0">
+                              <span className="text-white text-lg font-bold">
+                                {instructor.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex-grow min-w-0">
+                            <h4 className="font-semibold text-[#1E293B] text-sm sm:text-base">{instructor.name}</h4>
+                            <p className="text-xs text-[#64748B]">{instructor.email}</p>
+                            {instructor.specialization && (
+                              <p className="text-xs text-[#6366F1] mt-1">
+                                <span className="font-medium">Specialization:</span> {instructor.specialization}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Modal Footer */}
-            <div className="flex items-center justify-end gap-3 p-6 border-t border-[#E2E8F0]">
+            {/* Modal Footer - Fixed */}
+            <div className="flex items-center justify-end gap-3 p-4 sm:p-6 border-t border-[#E2E8F0] flex-shrink-0 bg-white">
               <button
                 onClick={() => {
                   setShowEnrollModal(false);
                   setSelectedCourse(null);
+                  setSelectedInstructor(null);
                   setSearchQuery('');
+                  setInstructorSearchQuery('');
                   setEnrollmentMessage(null);
                 }}
-                className="px-4 py-2 text-[#64748B] hover:bg-[#F1F5F9] rounded-lg transition-colors"
+                className="px-4 py-2 text-[#64748B] hover:bg-[#F1F5F9] rounded-lg transition-colors text-sm"
               >
                 Cancel
               </button>
               <button
                 onClick={handleEnrollSubmit}
                 disabled={!selectedCourse || enrolling}
-                className="px-6 py-2 bg-[#6366F1] text-white rounded-lg hover:bg-[#4F46E5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 sm:px-6 py-2 bg-[#6366F1] text-white rounded-lg hover:bg-[#4F46E5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
               >
                 {enrolling ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Enrolling...
+                    <span className="hidden sm:inline">Enrolling...</span>
+                    <span className="sm:hidden">Wait...</span>
                   </>
                 ) : (
-                  'Enroll Student'
+                  <>
+                    <span className="hidden sm:inline">Enroll Student</span>
+                    <span className="sm:hidden">Enroll</span>
+                  </>
                 )}
               </button>
             </div>

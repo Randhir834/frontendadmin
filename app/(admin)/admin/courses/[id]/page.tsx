@@ -153,7 +153,7 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
 
       {/* Enrollment Statistics */}
       {enrollmentStats && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
           <Card>
             <CardContent>
               <div className="flex items-center gap-4">
@@ -182,33 +182,7 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
             </CardContent>
           </Card>
 
-          <Card>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#E0F2FE] rounded-full flex items-center justify-center flex-shrink-0">
-                  <Award size={22} className="text-[#0284C7]" />
-                </div>
-                <div>
-                  <p className="text-xs text-[#64748B] mb-0.5">Completed</p>
-                  <p className="text-2xl font-bold text-[#1E293B]">{enrollmentStats.students_completed_course}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#FEF3C7] rounded-full flex items-center justify-center flex-shrink-0">
-                  <TrendingUp size={22} className="text-[#F59E0B]" />
-                </div>
-                <div>
-                  <p className="text-xs text-[#64748B] mb-0.5">Avg. Progress</p>
-                  <p className="text-2xl font-bold text-[#1E293B]">{enrollmentStats.average_progress || 0}%</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       )}
 
@@ -216,7 +190,7 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
       <Card>
         <CardHeader><CardTitle>Course Details</CardTitle></CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
               <div className="p-2 bg-white rounded-lg">
                 <DollarSign size={18} className="text-[#16A34A]" />
@@ -224,15 +198,6 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
               <div>
                 <p className="text-xs text-[#64748B] mb-0.5">Price</p>
                 <p className="text-base font-bold text-[#1E293B]">₹{course.price.toLocaleString()}</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">
-              <div className="p-2 bg-white rounded-lg">
-                <Clock size={18} className="text-[#F59E0B]" />
-              </div>
-              <div>
-                <p className="text-xs text-[#64748B] mb-0.5">Duration</p>
-                <p className="text-base font-bold text-[#1E293B]">{course.duration_value} {course.duration_unit}</p>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 bg-[#F8FAFC] rounded-lg">

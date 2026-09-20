@@ -27,6 +27,11 @@ interface NewCourseMaterial {
   folderPath?: string; // track folder structure
 }
 
+interface FolderOption {
+  label: string;
+  value: string;
+}
+
 export default function AdminEditCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const courseId = Number(id);
@@ -49,6 +54,8 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const folderInputRef = useRef<HTMLInputElement>(null);
   const [expandedFolders, setExpandedFolders] = useState<Record<string, boolean>>({});
+  const [availableFolders, setAvailableFolders] = useState<FolderOption[]>([]);
+  const [selectedUploadFolder, setSelectedUploadFolder] = useState<string>('');
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -98,6 +105,28 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
           setMaterialsLoading(true);
           const materialsRes = await courseMaterialService.getCourseMaterials(courseId);
           setExistingMaterials(materialsRes.materials || []);
+          
+          // Extract unique folders from existing materials
+          const folders: Set<string> = new Set();
+          materialsRes.materials?.forEach(material => {
+            if (material.folder_path) {
+              folders.add(material.folder_path);
+            }
+          });
+          
+          // Convert to options array
+          const folderOptions: FolderOption[] = [
+            { label: 'Root (No Folder)', value: '' }
+          ];
+          
+          Array.from(folders).sort().forEach(folder => {
+            folderOptions.push({
+              label: folder,
+              value: folder
+            });
+          });
+          
+          setAvailableFolders(folderOptions);
         } catch (error) {
           console.error('Failed to fetch course materials:', error);
           setExistingMaterials([]);
@@ -226,7 +255,8 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
     const files = e.target.files;
     if (!files || files.length === 0) return;
     
-    processFiles(files);
+    // Use the selected folder for manual file uploads
+    processFiles(files, selectedUploadFolder || undefined);
     e.target.value = ''; // Reset input
   };
 
@@ -332,6 +362,31 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
         material.id === id ? { ...material, description } : material
       )
     );
+  };
+
+  const updateNewMaterialFolder = (id: string, folderPath: string) => {
+    setNewMaterials(prev => 
+      prev.map(material => 
+        material.id === id ? { ...material, folderPath: folderPath || undefined } : material
+      )
+    );
+  };
+
+  const addNewFolder = () => {
+    const folderName = prompt('Enter new folder name:');
+    if (folderName && folderName.trim()) {
+      const trimmedName = folderName.trim();
+      // Check if folder already exists
+      const exists = availableFolders.some(f => f.value === trimmedName);
+      if (!exists) {
+        setAvailableFolders(prev => [...prev, { label: trimmedName, value: trimmedName }].sort((a, b) => {
+          if (a.value === '') return -1;
+          if (b.value === '') return 1;
+          return a.label.localeCompare(b.label);
+        }));
+      }
+      setSelectedUploadFolder(trimmedName);
+    }
   };
 
   const removeNewMaterial = (id: string) => {
@@ -932,6 +987,40 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
                       Drag and drop files or folders here
                     </p>
                     
+                    {/* Folder Selection for Manual File Upload */}
+                    <div className="mb-4 max-w-md mx-auto">
+                      <label className="block text-xs font-medium text-text-primary mb-2 text-left">
+                        Select Folder for Uploaded Files:
+                      </label>
+                      <div className="flex gap-2">
+                        <select
+                          value={selectedUploadFolder}
+                          onChange={(e) => setSelectedUploadFolder(e.target.value)}
+                          className="flex-1 px-3 py-2 text-sm rounded-lg border border-border text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                        >
+                          {availableFolders.map(folder => (
+                            <option key={folder.value} value={folder.value}>
+                              {folder.label}
+                            </option>
+                          ))}
+                        </select>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addNewFolder}
+                          title="Create new folder"
+                          className="flex items-center gap-1"
+                        >
+                          <Plus className="h-4 w-4" />
+                          <span>New</span>
+                        </Button>
+                      </div>
+                      <p className="text-xs text-text-muted mt-1 text-left">
+                        Files uploaded via &quot;Choose Files&quot; will be placed in the selected folder
+                      </p>
+                    </div>
+                    
                     <div className="flex items-center justify-center gap-3">
                       <Button
                         type="button"
@@ -1082,6 +1171,27 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
                                   placeholder="Optional description"
                                 />
                               </div>
+                            </div>
+                            
+                            {/* Folder selection for individual material */}
+                            <div>
+                              <label className="block text-sm font-medium text-text-primary mb-1">
+                                Folder
+                              </label>
+                              <select
+                                value={material.folderPath || ''}
+                                onChange={(e) => updateNewMaterialFolder(material.id, e.target.value)}
+                                className="w-full px-3 py-2 text-sm rounded-lg border border-border text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
+                              >
+                                {availableFolders.map(folder => (
+                                  <option key={folder.value} value={folder.value}>
+                                    {folder.label}
+                                  </option>
+                                ))}
+                              </select>
+                              <p className="text-xs text-text-muted mt-1">
+                                Choose which folder this material should be stored in
+                              </p>
                             </div>
                           </div>
                         );

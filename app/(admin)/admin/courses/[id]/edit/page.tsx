@@ -116,12 +116,12 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
           
           // Convert to options array
           const folderOptions: FolderOption[] = [
-            { label: 'Root (No Folder)', value: '' }
+            { label: '📁 Root (No Folder)', value: '' }
           ];
           
           Array.from(folders).sort().forEach(folder => {
             folderOptions.push({
-              label: folder,
+              label: `📁 ${folder}`,
               value: folder
             });
           });
@@ -379,7 +379,7 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
       // Check if folder already exists
       const exists = availableFolders.some(f => f.value === trimmedName);
       if (!exists) {
-        setAvailableFolders(prev => [...prev, { label: trimmedName, value: trimmedName }].sort((a, b) => {
+        setAvailableFolders(prev => [...prev, { label: `📁 ${trimmedName}`, value: trimmedName }].sort((a, b) => {
           if (a.value === '') return -1;
           if (b.value === '') return 1;
           return a.label.localeCompare(b.label);
@@ -988,36 +988,46 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
                     </p>
                     
                     {/* Folder Selection for Manual File Upload */}
-                    <div className="mb-4 max-w-md mx-auto">
-                      <label className="block text-xs font-medium text-text-primary mb-2 text-left">
-                        Select Folder for Uploaded Files:
+                    <div className="mb-4 max-w-2xl mx-auto bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-xl border border-blue-200">
+                      <label className="block text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                        <Folder className="h-4 w-4 text-blue-600" />
+                        Select Destination Folder
                       </label>
-                      <div className="flex gap-2">
-                        <select
-                          value={selectedUploadFolder}
-                          onChange={(e) => setSelectedUploadFolder(e.target.value)}
-                          className="flex-1 px-3 py-2 text-sm rounded-lg border border-border text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
-                        >
-                          {availableFolders.map(folder => (
-                            <option key={folder.value} value={folder.value}>
-                              {folder.label}
-                            </option>
-                          ))}
-                        </select>
+                      <div className="flex gap-3">
+                        <div className="flex-1 relative">
+                          <select
+                            value={selectedUploadFolder}
+                            onChange={(e) => setSelectedUploadFolder(e.target.value)}
+                            className="w-full px-4 py-2.5 text-sm rounded-lg border-2 border-blue-200 bg-white text-gray-800 font-medium shadow-sm hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer appearance-none pr-10"
+                            style={{
+                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%232563eb'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                              backgroundRepeat: 'no-repeat',
+                              backgroundPosition: 'right 0.75rem center',
+                              backgroundSize: '1.25rem'
+                            }}
+                          >
+                            {availableFolders.map(folder => (
+                              <option key={folder.value} value={folder.value}>
+                                {folder.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                         <Button
                           type="button"
                           variant="outline"
                           size="sm"
                           onClick={addNewFolder}
                           title="Create new folder"
-                          className="flex items-center gap-1"
+                          className="flex items-center gap-2 px-4 py-2.5 bg-white hover:bg-blue-50 border-2 border-blue-200 hover:border-blue-400 text-blue-700 font-medium shadow-sm transition-all"
                         >
                           <Plus className="h-4 w-4" />
-                          <span>New</span>
+                          <span>New Folder</span>
                         </Button>
                       </div>
-                      <p className="text-xs text-text-muted mt-1 text-left">
-                        Files uploaded via &quot;Choose Files&quot; will be placed in the selected folder
+                      <p className="text-xs text-gray-600 mt-3 flex items-start gap-2">
+                        <span className="text-blue-600 flex-shrink-0">ℹ️</span>
+                        <span>Files uploaded via &quot;Choose Files&quot; button will be organized in the selected folder</span>
                       </p>
                     </div>
                     
@@ -1175,22 +1185,32 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
                             
                             {/* Folder selection for individual material */}
                             <div>
-                              <label className="block text-sm font-medium text-text-primary mb-1">
-                                Folder
+                              <label className="block text-sm font-medium text-text-primary mb-2 flex items-center gap-2">
+                                <Folder className="h-4 w-4 text-blue-600" />
+                                Destination Folder
                               </label>
-                              <select
-                                value={material.folderPath || ''}
-                                onChange={(e) => updateNewMaterialFolder(material.id, e.target.value)}
-                                className="w-full px-3 py-2 text-sm rounded-lg border border-border text-text-primary focus:outline-none focus:ring-2 focus:ring-primary-500"
-                              >
-                                {availableFolders.map(folder => (
-                                  <option key={folder.value} value={folder.value}>
-                                    {folder.label}
-                                  </option>
-                                ))}
-                              </select>
-                              <p className="text-xs text-text-muted mt-1">
-                                Choose which folder this material should be stored in
+                              <div className="relative">
+                                <select
+                                  value={material.folderPath || ''}
+                                  onChange={(e) => updateNewMaterialFolder(material.id, e.target.value)}
+                                  className="w-full px-4 py-2.5 text-sm rounded-lg border-2 border-gray-200 bg-white text-gray-800 font-medium hover:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all cursor-pointer appearance-none pr-10"
+                                  style={{
+                                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%232563eb'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundPosition: 'right 0.75rem center',
+                                    backgroundSize: '1.25rem'
+                                  }}
+                                >
+                                  {availableFolders.map(folder => (
+                                    <option key={folder.value} value={folder.value}>
+                                      {folder.label}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1.5 flex items-center gap-1">
+                                <span className="text-blue-500">📂</span>
+                                This material will be stored in the selected folder
                               </p>
                             </div>
                           </div>

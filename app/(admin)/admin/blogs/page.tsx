@@ -100,7 +100,6 @@ export default function BlogsPage() {
           <p className="text-text-muted mt-1">Create and manage blog posts</p>
         </div>
         <Button
-          size="lg"
           onClick={() => router.push('/admin/blogs/create')}
           className="gap-2"
         >

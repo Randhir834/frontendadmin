@@ -274,8 +274,7 @@ export default function ReviewsManagementPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <MessageSquare className="w-8 h-8 text-indigo-600" />
+          <h1 className="text-2xl font-bold text-gray-900">
             Review Management
           </h1>
           <p className="text-gray-600 mt-2">

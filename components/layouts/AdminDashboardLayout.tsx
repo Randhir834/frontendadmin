@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  Bell, Mail, Loader2, Menu, X, LogOut,
+  Loader2, Menu, X, LogOut,
   LayoutDashboard, GraduationCap, Users, BookOpen, PlusCircle,
   CreditCard, FileText, BarChart3, User as UserIcon, MessageSquare, LucideIcon, Newspaper
 } from 'lucide-react';
@@ -159,15 +159,6 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">
-              <button className="relative p-2 text-[#78909C] hover:text-[#1E88E5] transition-colors hidden sm:block">
-                <Bell size={20} />
-                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#DC2626] text-white text-xs rounded-full flex items-center justify-center font-medium">3</span>
-              </button>
-              <button className="relative p-2 text-[#78909C] hover:text-[#1E88E5] transition-colors hidden sm:block">
-                <Mail size={20} />
-                <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-[#DC2626] text-white text-xs rounded-full flex items-center justify-center font-medium">2</span>
-              </button>
-
               {/* Profile Display */}
               <div className="flex items-center gap-2 sm:gap-3 pl-2 sm:pl-4 border-l border-[#E0E0E0] py-1">
                 {userLoading ? (

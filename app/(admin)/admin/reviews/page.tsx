@@ -274,12 +274,19 @@ export default function ReviewsManagementPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Review Management
-          </h1>
-          <p className="text-gray-600 mt-2">
-            Moderate and manage student and parent reviews
-          </p>
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-indigo-100 rounded-xl">
+              <MessageSquare size={32} className="text-indigo-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
+                Reviews Management
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Moderate and manage student and parent reviews
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Authentication Error */}

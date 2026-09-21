@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { 
   Mail, Calendar, Badge, User, Loader2, AlertCircle, Phone, MapPin, 
-  GraduationCap, Award, Edit, Trash2
+  GraduationCap, Award, Edit, Trash2, Users
 } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import EditUserModal from '@/components/EditUserModal';
@@ -165,6 +165,16 @@ export default function InstructorProfilePage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-8">
+      {/* Header */}
+      <div className="flex items-center gap-4">
+        <div className="p-2 bg-purple-100 rounded-xl">
+          <Users size={32} className="text-purple-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Instructor Profile</h1>
+          <p className="text-gray-600 mt-1">View and manage instructor details</p>
+        </div>
+      </div>
 
       {/* Profile Header */}
       <div className="bg-gradient-to-r from-purple-50 to-purple-100 rounded-2xl p-8">

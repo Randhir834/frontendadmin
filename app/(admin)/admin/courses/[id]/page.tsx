@@ -128,7 +128,7 @@ export default function AdminCourseViewPage({ params }: { params: Promise<{ id: 
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-xl md:text-2xl font-bold text-[#1E293B]">{course.title}</h1>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">{course.title}</h1>
             <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
               course.status === 'published' ? 'bg-[#DCFCE7] text-[#166534]' :
               course.status === 'archived' ? 'bg-[#FEE2E2] text-[#991B1B]' :

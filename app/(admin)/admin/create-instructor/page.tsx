@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Save, Loader2, Copy, Check } from 'lucide-react';
+import { Save, Loader2, Copy, Check, UserPlus } from 'lucide-react';
 import Button from '@/components/ui/Button';
 import { adminService } from '@/services/adminService';
 
@@ -121,8 +121,15 @@ export default function CreateInstructorPage() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Create Instructor Account</h1>
-          <p className="text-gray-600 mt-2">Add a new instructor to the system</p>
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-purple-100 rounded-xl">
+              <UserPlus size={32} className="text-purple-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Create Instructor Account</h1>
+              <p className="text-gray-600 mt-1">Add a new instructor to the system</p>
+            </div>
+          </div>
         </div>
 
         {/* Main Card */}

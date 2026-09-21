@@ -124,10 +124,15 @@ export default function AdminCourseMaterialsPage({ params }: { params: Promise<{
             <ArrowLeft className="size-4" />
             Back to Course
           </Link>
-          <h1 className="text-xl md:text-2xl font-bold text-[#1E293B]">
-            Course Materials
-          </h1>
-          <p className="text-sm text-[#64748B] mt-1">{course.title}</p>
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-blue-100 rounded-xl">
+              <FileText size={32} className="text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Course Materials</h1>
+              <p className="text-gray-600 mt-1">{course.title}</p>
+            </div>
+          </div>
         </div>
         <Button
           onClick={() => setShowUploadModal(true)}

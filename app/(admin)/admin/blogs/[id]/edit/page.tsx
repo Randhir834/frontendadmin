@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { ArrowLeft, Save, Upload, Image as ImageIcon } from 'lucide-react';
+import { ArrowLeft, Save, Upload, Image as ImageIcon, Edit } from 'lucide-react';
 import { blogService } from '@/services/blogService';
 import { storageService } from '@/services/storageService';
 import type { BlogFormData } from '@/types';
@@ -146,9 +146,12 @@ export default function EditBlogPage({ params }: { params: Promise<{ id: string 
         >
           <ArrowLeft className="w-6 h-6" />
         </button>
+        <div className="p-2 bg-green-100 rounded-xl">
+          <Edit size={32} className="text-green-600" />
+        </div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Edit Blog</h1>
-          <p className="text-gray-600 mt-1">Update your blog post details</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Edit Blog Post</h1>
+          <p className="text-gray-600 mt-1">Update blog post details</p>
         </div>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import {
-  Mail, Phone, MapPin, Calendar, Camera, Shield, LogOut, Loader2, Trash2, Save, User
+  Mail, Phone, MapPin, Calendar, Camera, Shield, LogOut, Loader2, Trash2, Save, User as UserIcon
 } from 'lucide-react';
 import { userService, UserProfile } from '@/services/userService';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -220,7 +220,15 @@ export default function AdminProfileSettingsPage() {
         </div>
       )}
 
-      <h1 className="text-xl sm:text-2xl font-bold text-[#1E3A5F] mb-6">Profile Settings</h1>
+      <div className="flex items-center gap-4">
+        <div className="p-2 bg-gray-100 rounded-xl">
+          <UserIcon size={32} className="text-gray-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Profile Settings</h1>
+          <p className="text-gray-600 mt-1">Manage your account information and preferences</p>
+        </div>
+      </div>
 
       {/* Profile Header Card */}
       <div className="bg-white rounded-2xl border border-[#E0E0E0] p-4 sm:p-6 lg:p-8 mb-6">
@@ -300,7 +308,7 @@ export default function AdminProfileSettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <User size={18} />
+              <UserIcon size={18} />
               Personal Information
             </CardTitle>
           </CardHeader>

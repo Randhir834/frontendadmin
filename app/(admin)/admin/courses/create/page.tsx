@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Check, X, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield, AlertCircle, Folder, FolderOpen, ArrowUpDown } from 'lucide-react';
+import { Loader2, Check, X, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield, AlertCircle, Folder, FolderOpen, ArrowUpDown, PlusCircle } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -451,11 +451,14 @@ export default function AdminCreateCoursePage() {
   return (
     <div className="p-4 md:p-8 max-w-[1000px] mx-auto space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-[#1E293B]">Create New Course</h1>
-        <p className="text-sm text-[#64748B] mt-1">
-          Add a new course to the platform
-        </p>
+      <div className="flex items-center gap-4">
+        <div className="p-2 bg-blue-100 rounded-xl">
+          <PlusCircle size={32} className="text-blue-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Create New Course</h1>
+          <p className="text-gray-600 mt-1">Add a new course to the platform</p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">

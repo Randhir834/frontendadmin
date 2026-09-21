@@ -89,7 +89,7 @@ export default function AdminInstructorsPage() {
               <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
                 Instructors Management
               </h1>
-              <p className="text-sm text-gray-600">
+              <p className="text-gray-600 mt-1">
                 Manage and view all registered instructors
               </p>
             </div>

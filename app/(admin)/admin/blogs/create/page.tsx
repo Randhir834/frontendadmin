@@ -117,9 +117,12 @@ export default function CreateBlogPage() {
         >
           <ArrowLeft className="w-6 h-6 text-text-primary" />
         </button>
+        <div className="p-2 bg-green-100 rounded-xl">
+          <ImageIcon size={32} className="text-green-600" />
+        </div>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold text-text-primary">Create New Blog</h1>
-          <p className="text-sm text-text-muted mt-1">Fill in the details to create a new blog post</p>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Create New Blog</h1>
+          <p className="text-gray-600 mt-1">Fill in the details to create a new blog post</p>
         </div>
       </div>
 

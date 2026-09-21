@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Loader2, Check, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield, ExternalLink, Download, AlertCircle, Folder, FolderOpen, ArrowUpDown, ChevronDown, ChevronRight } from 'lucide-react';
+import { Loader2, Check, Upload, Plus, Minus, FileText, Image, Presentation, Trash2, Shield, ExternalLink, Download, AlertCircle, Folder, FolderOpen, ArrowUpDown, ChevronDown, ChevronRight, Edit } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
@@ -664,7 +664,15 @@ export default function AdminEditCoursePage({ params }: { params: Promise<{ id: 
   return (
     <div className="p-4 sm:p-6 lg:p-8 space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl sm:text-2xl font-bold text-text-primary">Edit Course</h1>
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-blue-100 rounded-xl">
+            <Edit size={32} className="text-blue-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Edit Course</h1>
+            <p className="text-gray-600 mt-1">Update course information and content</p>
+          </div>
+        </div>
         <Button variant="ghost" onClick={() => router.back()}>Cancel</Button>
       </div>
 

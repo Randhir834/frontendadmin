@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { FolderOpen } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { categoryService } from '@/services/categoryService';
 import type { Category } from '@/types';
@@ -14,7 +15,15 @@ export default function AdminCategoriesPage() {
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <h1 className="text-xl sm:text-2xl font-bold text-text-primary">Categories</h1>
+      <div className="flex items-center gap-4">
+        <div className="p-2 bg-purple-100 rounded-xl">
+          <FolderOpen size={32} className="text-purple-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Category Management</h1>
+          <p className="text-gray-600 mt-1">Organize and manage course categories</p>
+        </div>
+      </div>
       <Card>
         <CardHeader><CardTitle>Category List</CardTitle></CardHeader>
         <CardContent>

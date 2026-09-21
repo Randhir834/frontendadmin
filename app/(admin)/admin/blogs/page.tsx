@@ -95,9 +95,14 @@ export default function BlogsPage() {
     <div className="p-6 max-w-[1400px] mx-auto space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Blog Management</h1>
-          <p className="text-text-muted mt-1">Create and manage blog posts</p>
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-green-100 rounded-xl">
+            <Plus size={32} className="text-green-600" />
+          </div>
+          <div>
+            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Blog Management</h1>
+            <p className="text-gray-600 mt-1">Create and manage blog posts</p>
+          </div>
         </div>
         <Button
           onClick={() => router.push('/admin/blogs/create')}

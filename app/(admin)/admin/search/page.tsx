@@ -3,7 +3,7 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Search, BookOpen, FileText, FolderOpen, Users, Loader2 } from 'lucide-react';
+import { Search as SearchIcon, BookOpen, FileText, FolderOpen, Users, Loader2 } from 'lucide-react';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
 import { searchService } from '@/services/searchService';
 import type { SearchResults } from '@/services/searchService';
@@ -43,6 +43,16 @@ function SearchResultsContent() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
+      <div className="flex items-center gap-4 mb-6">
+        <div className="p-2 bg-gray-100 rounded-xl">
+          <SearchIcon size={32} className="text-gray-600" />
+        </div>
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Search Results</h1>
+          <p className="text-gray-600 mt-1">Find courses, users, lessons, and more</p>
+        </div>
+      </div>
+
       {loading && (
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -65,7 +75,7 @@ function SearchResultsContent() {
               {/* Courses */}
               {results.courses && results.courses.length > 0 && (
                 <section>
-                  <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <BookOpen className="h-5 w-5 text-primary" />
                     Courses ({results.courses.length})
                   </h2>
@@ -107,7 +117,7 @@ function SearchResultsContent() {
               {/* Users */}
               {results.users && results.users.length > 0 && (
                 <section>
-                  <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <Users className="h-5 w-5 text-primary" />
                     Users ({results.users.length})
                   </h2>
@@ -140,7 +150,7 @@ function SearchResultsContent() {
               {/* Lessons */}
               {results.lessons && results.lessons.length > 0 && (
                 <section>
-                  <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <FileText className="h-5 w-5 text-primary" />
                     Lessons ({results.lessons.length})
                   </h2>
@@ -165,7 +175,7 @@ function SearchResultsContent() {
               {/* Categories */}
               {results.categories && results.categories.length > 0 && (
                 <section>
-                  <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+                  <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
                     <FolderOpen className="h-5 w-5 text-primary" />
                     Categories ({results.categories.length})
                   </h2>
@@ -192,7 +202,7 @@ function SearchResultsContent() {
 
       {!loading && !query && (
         <div className="text-center py-12">
-          <Search className="h-16 w-16 text-muted mx-auto mb-4" />
+          <SearchIcon className="h-16 w-16 text-muted mx-auto mb-4" />
           <p className="text-muted">Enter a search term to find courses, users, lessons, and more</p>
         </div>
       )}

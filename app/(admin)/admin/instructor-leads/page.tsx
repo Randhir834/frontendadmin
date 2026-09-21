@@ -398,10 +398,11 @@ export default function InstructorLeadsPage() {
             Export CSV
           </Button>
           <Button
-            variant="secondary"
+            variant="primary"
+            size="sm"
             onClick={handleImportClick}
             disabled={importing}
-            className="flex items-center gap-2 text-sm font-medium disabled:opacity-50"
+            className="flex items-center gap-2 disabled:opacity-50"
           >
             {importing ? (
               <Loader2 size={16} className="animate-spin" />

@@ -449,13 +449,14 @@ export default function StudentLeadsPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3 pt-2 border-t border-gray-200">
-          <button
+          <Button
+            variant="outline"
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            className="flex items-center gap-2 text-sm font-medium"
           >
             <Download size={16} />
             Export CSV
-          </button>
+          </Button>
           <Button
             variant="primary"
             size="sm"

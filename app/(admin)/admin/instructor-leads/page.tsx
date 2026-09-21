@@ -85,16 +85,20 @@ export default function InstructorLeadsPage() {
 
   useEffect(() => {
     if (!authError) {
-      fetchLeads();
-      fetchStats();
+      fetchData();
     }
   }, [authError]);
 
-  const fetchLeads = async () => {
+  const fetchData = async () => {
     try {
       setLoading(true);
-      const data = await getInstructorLeads();
-      setLeads(data.registrations || []);
+      // Fetch both leads and stats simultaneously to prevent staggered loading
+      const [leadsData, statsData] = await Promise.all([
+        getInstructorLeads(),
+        getInstructorLeadsStats(),
+      ]);
+      setLeads(leadsData.registrations || []);
+      setStats(statsData);
     } catch (error: any) {
       console.error('Failed to fetch instructor leads:', error);
       if (error.response?.status === 401) {
@@ -104,15 +108,6 @@ export default function InstructorLeadsPage() {
       }
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchStats = async () => {
-    try {
-      const data = await getInstructorLeadsStats();
-      setStats(data);
-    } catch (error) {
-      console.error('Failed to fetch stats:', error);
     }
   };
 
@@ -149,8 +144,7 @@ export default function InstructorLeadsPage() {
       setShowStatusModal(false);
       setLeadToUpdate(null);
       setStatusNotes('');
-      fetchLeads();
-      fetchStats();
+      fetchData();
     } catch (error) {
       console.error('Failed to update status:', error);
       toast.error('Failed to update status');
@@ -173,8 +167,7 @@ export default function InstructorLeadsPage() {
       toast.success('Lead deleted successfully');
       setShowDeleteModal(false);
       setLeadToDelete(null);
-      fetchLeads();
-      fetchStats();
+      fetchData();
     } catch (error) {
       console.error('Failed to delete lead:', error);
       toast.error('Failed to delete lead');
@@ -234,8 +227,7 @@ export default function InstructorLeadsPage() {
 
       const result = await importInstructorLeads(leadsToImport);
       toast.success(result.message);
-      fetchLeads();
-      fetchStats();
+      fetchData();
     } catch (error) {
       console.error('Failed to import leads:', error);
       toast.error('Failed to import leads');
@@ -396,17 +388,24 @@ export default function InstructorLeadsPage() {
 
         {/* Action Buttons */}
         <div className="flex flex-wrap gap-3 pt-2 border-t border-gray-200">
-          <button
+          <Button
+            variant="outline"
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+            className="flex items-center gap-2 text-sm font-medium"
+          >
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            className="flex items-center gap-2 text-sm font-medium"
           >
             <Download size={16} />
             Export CSV
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="secondary"
             onClick={handleImportClick}
             disabled={importing}
-            className="flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium disabled:opacity-50"
+            className="flex items-center gap-2 text-sm font-medium disabled:opacity-50"
           >
             {importing ? (
               <Loader2 size={16} className="animate-spin" />
@@ -414,7 +413,7 @@ export default function InstructorLeadsPage() {
               <Upload size={16} />
             )}
             Import CSV
-          </button>
+          </Button>
           <input
             ref={fileInputRef}
             type="file"
@@ -509,66 +508,75 @@ export default function InstructorLeadsPage() {
 
                   {/* Actions */}
                   <div className="flex flex-wrap gap-2">
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => handleViewDetails(lead)}
-                      className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors text-sm font-medium"
+                      className="text-sm font-medium"
                     >
                       View Details
                     </button>
                     {(lead.status || 'pending') === 'pending' && (
                       <>
-                        <button
+                        <Button
+                          variant="primary"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'contacted')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Mark Contacted
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="success"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'accepted')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Accept
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'rejected')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Reject
-                        </button>
+                        </Button>
                       </>
                     )}
                     {(lead.status || 'pending') === 'contacted' && (
                       <>
-                        <button
+                        <Button
+                          variant="success"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'accepted')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Accept
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'rejected')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Reject
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="warning"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'pending')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Back to Pending
-                        </button>
+                        </Button>
                       </>
                     )}
-                    <button
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleDeleteClick(lead)}
                       disabled={actionLoading === lead.id}
-                      className="px-3 py-1.5 bg-white border border-red-300 text-red-600 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium disabled:opacity-50 flex items-center gap-1"
+                      className="text-red-600 border-red-300 hover:bg-red-50 flex items-center gap-1"
                     >
                       <Trash2 size={14} />
                       Delete
@@ -670,20 +678,22 @@ export default function InstructorLeadsPage() {
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowStatusModal(false);
                   setLeadToUpdate(null);
                   setStatusNotes('');
                 }}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="flex-1 font-medium"
               >
                 Cancel
               </button>
-              <button
+              <Button
+                variant="secondary"
                 onClick={handleStatusUpdate}
                 disabled={!!actionLoading}
-                className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {actionLoading ? (
                   <>
@@ -714,19 +724,21 @@ export default function InstructorLeadsPage() {
               </p>
             </div>
             <div className="p-6 border-t border-gray-200 flex gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowDeleteModal(false);
                   setLeadToDelete(null);
                 }}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="flex-1 font-medium"
               >
                 Cancel
               </button>
-              <button
+              <Button
+                variant="danger"
                 onClick={handleDeleteConfirm}
                 disabled={!!actionLoading}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {actionLoading ? (
                   <>

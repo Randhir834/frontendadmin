@@ -223,10 +223,10 @@ export default function CreateBlogPage() {
                   />
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="danger"
                     size="sm"
                     onClick={() => setFormData((prev) => ({ ...prev, featured_image_url: '' }))}
-                    className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white"
+                    className="absolute top-2 right-2"
                   >
                     <Trash2 className="h-4 w-4" />
                   </Button>

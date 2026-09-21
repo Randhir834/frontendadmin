@@ -1,7 +1,7 @@
 import { cn } from '@/utils/cn';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'success' | 'danger' | 'warning';
   size?: 'sm' | 'md' | 'lg';
   children: React.ReactNode;
 }
@@ -22,6 +22,9 @@ export default function Button({
           'bg-card text-primary-500 border border-primary-500 hover:bg-primary-50': variant === 'secondary',
           'border border-border text-text-primary hover:bg-hover': variant === 'outline',
           'text-text-secondary hover:bg-hover': variant === 'ghost',
+          'bg-secondary-500 text-text-white hover:bg-secondary-600 active:bg-secondary-700': variant === 'success',
+          'bg-accent-pink text-text-white hover:bg-accent-pink/90 active:bg-accent-pink/80': variant === 'danger',
+          'bg-accent-yellow text-gray-900 hover:bg-accent-yellow/90 active:bg-accent-yellow/80': variant === 'warning',
         },
         {
           'px-3 py-1.5 text-sm': size === 'sm',

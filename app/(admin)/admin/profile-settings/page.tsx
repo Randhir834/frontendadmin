@@ -260,13 +260,15 @@ export default function AdminProfileSettingsPage() {
               {uploadingPhoto ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
             </button>
             {user?.avatar_url && (
-              <button
+              <Button
+                variant="danger"
+                size="sm"
                 onClick={handleDeletePhoto}
                 disabled={uploadingPhoto}
-                className="absolute top-1 right-1 w-6 h-6 bg-red-500 border border-white rounded-full flex items-center justify-center text-white hover:bg-red-600 shadow-sm transition-colors disabled:opacity-50 cursor-pointer"
+                className="absolute top-1 right-1 w-6 h-6 border border-white rounded-full flex items-center justify-center shadow-sm disabled:opacity-50 cursor-pointer"
               >
                 <Trash2 size={12} />
-              </button>
+              </Button>
             )}
           </div>
 

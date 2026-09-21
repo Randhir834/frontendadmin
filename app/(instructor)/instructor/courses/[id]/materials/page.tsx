@@ -190,7 +190,8 @@ export default function InstructorCourseMaterialsPage({ params }: { params: Prom
                       <Button
                         onClick={() => setViewingMaterial(material)}
                         size="sm"
-                        className="flex items-center space-x-1 bg-blue-600 hover:bg-blue-700"
+                        variant="primary"
+                        className="flex items-center space-x-1"
                       >
                         <Eye className="h-4 w-4" />
                         <span>Secure View</span>

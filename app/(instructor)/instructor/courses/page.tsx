@@ -149,7 +149,7 @@ export default function InstructorCoursesPage() {
                   </Link>
                   
                   <Link href={`/instructor/courses/${course.id}/materials`} className="block">
-                    <Button className="w-full justify-start bg-blue-600 hover:bg-blue-700">
+                    <Button variant="primary" className="w-full justify-start">
                       <FileText className="h-4 w-4 mr-2" />
                       Course Materials
                     </Button>

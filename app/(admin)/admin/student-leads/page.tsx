@@ -84,10 +84,33 @@ export default function StudentLeadsPage() {
 
   useEffect(() => {
     if (!authError) {
-      fetchLeads();
-      fetchStats();
+      fetchData();
     }
   }, [authError]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      // Fetch both leads and stats simultaneously to prevent staggered loading
+      const [contactData, trialData, statsData] = await Promise.all([
+        getStudentLeads({ limit: 1000 }),
+        getTrialRequests(),
+        getStudentLeadsStats(),
+      ]);
+      setLeads(contactData.leads || []);
+      setTrialRequests(trialData.trialRequests || []);
+      setStats(statsData);
+    } catch (error: any) {
+      console.error('Failed to fetch student leads:', error);
+      if (error.response?.status === 401) {
+        toast.error('Session expired. Please login again.');
+      } else {
+        toast.error('Failed to load student leads');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Combine and filter leads
   useEffect(() => {
@@ -160,8 +183,7 @@ export default function StudentLeadsPage() {
       setShowStatusModal(false);
       setLeadToUpdate(null);
       setStatusNotes('');
-      fetchLeads();
-      fetchStats();
+      fetchData();
     } catch (error) {
       console.error('Failed to update status:', error);
       toast.error('Failed to update status');
@@ -225,8 +247,7 @@ export default function StudentLeadsPage() {
 
       const result = await importStudentLeads(leadsToImport);
       toast.success(result.message);
-      fetchLeads();
-      fetchStats();
+      fetchData();
     } catch (error) {
       console.error('Failed to import leads:', error);
       toast.error('Failed to import leads');
@@ -434,10 +455,12 @@ export default function StudentLeadsPage() {
             <Download size={16} />
             Export CSV
           </button>
-          <button
+          <Button
+            variant="primary"
+            size="sm"
             onClick={handleImportClick}
             disabled={importing}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50"
+            className="flex items-center gap-2 disabled:opacity-50"
           >
             {importing ? (
               <Loader2 size={16} className="animate-spin" />
@@ -445,7 +468,7 @@ export default function StudentLeadsPage() {
               <Upload size={16} />
             )}
             Import CSV
-          </button>
+          </Button>
           <input
             ref={fileInputRef}
             type="file"
@@ -571,45 +594,50 @@ export default function StudentLeadsPage() {
                     </button>
                     {(lead.status || 'pending') === 'pending' && (
                       <>
-                        <button
+                        <Button
+                          variant="primary"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'contacted')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Mark Contacted
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="success"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'completed')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Complete
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'cancelled')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Cancel
-                        </button>
+                        </Button>
                       </>
                     )}
                     {(lead.status || 'pending') === 'contacted' && (
                       <>
-                        <button
+                        <Button
+                          variant="success"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'completed')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Complete
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="warning"
+                          size="sm"
                           onClick={() => handleStatusChange(lead, 'pending')}
                           disabled={actionLoading === lead.id}
-                          className="px-3 py-1.5 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm font-medium disabled:opacity-50"
                         >
                           Back to Pending
-                        </button>
+                        </Button>
                       </>
                     )}
                     {actionLoading === lead.id && (
@@ -734,20 +762,22 @@ export default function StudentLeadsPage() {
               </div>
             </div>
             <div className="p-6 border-t border-gray-200 flex gap-3">
-              <button
+              <Button
+                variant="outline"
                 onClick={() => {
                   setShowStatusModal(false);
                   setLeadToUpdate(null);
                   setStatusNotes('');
                 }}
-                className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+                className="flex-1 font-medium"
               >
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="primary"
                 onClick={handleStatusUpdate}
                 disabled={!!actionLoading}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 flex items-center justify-center gap-2"
+                className="flex-1 font-medium disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {actionLoading ? (
                   <>
@@ -757,7 +787,7 @@ export default function StudentLeadsPage() {
                 ) : (
                   'Confirm'
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

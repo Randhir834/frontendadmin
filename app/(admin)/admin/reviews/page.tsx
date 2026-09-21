@@ -482,37 +482,43 @@ export default function ReviewsManagementPage() {
 
                     {review.status === 'pending' && (
                       <>
-                        <button
+                        <Button
+                          variant="success"
+                          size="sm"
                           onClick={() => handleApprove(review)}
                           disabled={actionLoading === review.id}
-                          className="p-2 bg-green-100 hover:bg-green-200 rounded-lg transition-colors disabled:opacity-50"
+                          className="p-2"
                           title="Approve"
                         >
                           {actionLoading === review.id ? (
-                            <Loader2 className="w-5 h-5 text-green-600 animate-spin" />
+                            <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
-                            <CheckCircle className="w-5 h-5 text-green-600" />
+                            <CheckCircle className="w-5 h-5" />
                           )}
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
                           onClick={() => handleRejectClick(review)}
                           disabled={actionLoading === review.id}
-                          className="p-2 bg-red-100 hover:bg-red-200 rounded-lg transition-colors disabled:opacity-50"
+                          className="p-2"
                           title="Reject"
                         >
-                          <XCircle className="w-5 h-5 text-red-600" />
-                        </button>
+                          <XCircle className="w-5 h-5" />
+                        </Button>
                       </>
                     )}
 
-                    <button
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => handleDelete(review)}
                       disabled={actionLoading === review.id}
-                      className="p-2 bg-red-50 hover:bg-red-100 rounded-lg transition-colors disabled:opacity-50"
+                      className="p-2 text-red-500 hover:bg-red-50 border-red-200"
                       title="Delete"
                     >
-                      <Trash2 className="w-5 h-5 text-red-500" />
-                    </button>
+                      <Trash2 className="w-5 h-5" />
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -626,10 +632,11 @@ export default function ReviewsManagementPage() {
               >
                 Cancel
               </button>
-              <button
+              <Button
+                variant="danger"
                 onClick={handleRejectConfirm}
                 disabled={actionLoading !== null}
-                className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                className="flex items-center gap-2"
               >
                 {actionLoading ? (
                   <>
@@ -639,7 +646,7 @@ export default function ReviewsManagementPage() {
                 ) : (
                   'Reject Review'
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

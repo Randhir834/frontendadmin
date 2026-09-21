@@ -354,3 +354,46 @@ export interface RatingDistribution {
 export interface ApiError {
   error: string;
 }
+
+// Student Leads (Contact Requests & Trial Requests)
+export interface StudentLead {
+  id: number;
+  parent_name?: string;
+  name?: string;
+  child_name?: string;
+  phone: string;
+  email: string;
+  grade?: string;
+  course_interest?: string;
+  message?: string;
+  type?: 'general' | 'trial';
+  role?: string;
+  status?: 'pending' | 'contacted' | 'completed' | 'cancelled';
+  notes?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+// Instructor Leads (Instructor Registrations)
+export interface InstructorLead {
+  id: number;
+  full_name: string;
+  qualification: string;
+  subject_expertise: string;
+  phone_number: string;
+  role?: string;
+  status?: 'pending' | 'contacted' | 'accepted' | 'rejected';
+  notes?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface LeadsStats {
+  total_count: number;
+  pending_count: number;
+  contacted_count: number;
+  completed_count: number;
+  cancelled_count?: number;
+  accepted_count?: number;
+  rejected_count?: number;
+}

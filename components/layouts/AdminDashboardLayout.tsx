@@ -6,7 +6,8 @@ import { usePathname, useRouter } from 'next/navigation';
 import {
   Loader2, Menu, X, LogOut,
   LayoutDashboard, GraduationCap, Users, BookOpen, PlusCircle,
-  CreditCard, FileText, BarChart3, User as UserIcon, MessageSquare, LucideIcon, Newspaper
+  CreditCard, FileText, BarChart3, User as UserIcon, MessageSquare, LucideIcon, Newspaper,
+  UserPlus, ClipboardList
 } from 'lucide-react';
 import { userService, UserProfile } from '@/services/userService';
 import GlobalSearch from '@/components/GlobalSearch';
@@ -15,6 +16,8 @@ const menuItems = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { label: 'Students', href: '/admin/students', icon: GraduationCap },
   { label: 'Instructors', href: '/admin/instructors', icon: Users },
+  { label: 'Student Leads', href: '/admin/student-leads', icon: UserPlus },
+  { label: 'Instructor Leads', href: '/admin/instructor-leads', icon: ClipboardList },
   { label: 'Courses', href: '/admin/courses', icon: BookOpen },
   { label: 'Blogs', href: '/admin/blogs', icon: Newspaper },
   { label: 'Reviews', href: '/admin/reviews', icon: MessageSquare },

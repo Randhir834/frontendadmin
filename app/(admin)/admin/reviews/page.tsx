@@ -24,6 +24,7 @@ import {
   deleteReview
 } from '@/services/reviewService';
 import { Review, ReviewStats, RatingDistribution } from '@/types';
+import Button from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 import { io, Socket } from 'socket.io-client';
 

@@ -32,6 +32,7 @@ import {
   importStudentLeads,
 } from '@/services/leadsService';
 import type { StudentLead, LeadsStats } from '@/types';
+import Button from '@/components/ui/Button';
 import toast from 'react-hot-toast';
 
 export default function StudentLeadsPage() {

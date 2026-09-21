@@ -33,6 +33,7 @@ import {
   exportInstructorLeadsToCSV,
   importInstructorLeads,
 } from '@/services/leadsService';
+import Button from '@/components/ui/Button';
 import type { InstructorLead, LeadsStats } from '@/types';
 import toast from 'react-hot-toast';
 
@@ -393,11 +394,6 @@ export default function InstructorLeadsPage() {
             onClick={handleExport}
             className="flex items-center gap-2 text-sm font-medium"
           >
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            className="flex items-center gap-2 text-sm font-medium"
-          >
             <Download size={16} />
             Export CSV
           </Button>
@@ -514,7 +510,7 @@ export default function InstructorLeadsPage() {
                       className="text-sm font-medium"
                     >
                       View Details
-                    </button>
+                    </Button>
                     {(lead.status || 'pending') === 'pending' && (
                       <>
                         <Button
@@ -580,7 +576,7 @@ export default function InstructorLeadsPage() {
                     >
                       <Trash2 size={14} />
                       Delete
-                    </button>
+                    </Button>
                     {actionLoading === lead.id && (
                       <Loader2 className="w-5 h-5 animate-spin text-purple-600" />
                     )}
@@ -688,7 +684,7 @@ export default function InstructorLeadsPage() {
                 className="flex-1 font-medium"
               >
                 Cancel
-              </button>
+              </Button>
               <Button
                 variant="secondary"
                 onClick={handleStatusUpdate}
@@ -703,7 +699,7 @@ export default function InstructorLeadsPage() {
                 ) : (
                   'Confirm'
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>
@@ -733,7 +729,7 @@ export default function InstructorLeadsPage() {
                 className="flex-1 font-medium"
               >
                 Cancel
-              </button>
+              </Button>
               <Button
                 variant="danger"
                 onClick={handleDeleteConfirm}
@@ -751,7 +747,7 @@ export default function InstructorLeadsPage() {
                     Delete
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

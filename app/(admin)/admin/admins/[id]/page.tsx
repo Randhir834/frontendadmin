@@ -243,7 +243,10 @@ export default function AdminDetailPage() {
             <Button
               variant="primary"
               className="flex-1 flex items-center justify-center gap-2"
-              onClick={() => toast.info('Edit functionality coming soon')}
+              onClick={() => toast('Edit functionality coming soon', { 
+                icon: 'ℹ️',
+                duration: 3000 
+              })}
             >
               <Edit size={16} />
               Edit Profile

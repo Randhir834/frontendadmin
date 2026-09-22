@@ -10,7 +10,6 @@ import {
   UserPlus, ClipboardList
 } from 'lucide-react';
 import { userService, UserProfile } from '@/services/userService';
-import GlobalSearch from '@/components/GlobalSearch';
 
 const menuItems = [
   { label: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -155,10 +154,6 @@ export default function AdminDashboardLayout({ children }: AdminDashboardLayoutP
               >
                 <Menu size={20} />
               </button>
-              {/* Desktop collapse toggle removed */}
-              <div className="hidden lg:block w-4" />
-              {/* Global Search */}
-              <GlobalSearch className="flex-1 max-w-4xl" />
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4 shrink-0">

@@ -34,6 +34,7 @@ export const authService = {
     return response.data;
   },
 
+  // Legacy token-based forgot password (kept for backward compatibility)
   forgotPassword: async (data: { 
     email?: string; 
     phone?: string; 
@@ -45,8 +46,42 @@ export const authService = {
     return response.data;
   },
 
+  // Legacy token-based reset password (kept for backward compatibility)
   resetPassword: async (data: { token: string; password: string }) => {
     const response = await api.post('/auth/reset-password', data);
+    return response.data;
+  },
+
+  // New OTP-based password reset flow
+  requestPasswordReset: async (data: {
+    email?: string;
+    phone?: string;
+    identifier?: string;
+    expectedRole: PortalRole;
+  }) => {
+    const response = await api.post('/auth/forgot-password/request', data);
+    return response.data;
+  },
+
+  verifyPasswordResetOTP: async (data: {
+    email?: string;
+    phone?: string;
+    identifier?: string;
+    otp: string;
+    expectedRole: PortalRole;
+  }) => {
+    const response = await api.post('/auth/forgot-password/verify-otp', data);
+    return response.data;
+  },
+
+  resetPasswordWithOTP: async (data: {
+    email?: string;
+    phone?: string;
+    identifier?: string;
+    password: string;
+    expectedRole: PortalRole;
+  }) => {
+    const response = await api.post('/auth/forgot-password/reset', data);
     return response.data;
   },
 };
